@@ -1,0 +1,61 @@
+{% use 'form_div_layout.html.twig' %}
+
+{% block form_errors %}
+    {%- if errors|length > 0 -%}
+        <div class="field-error space-y-1">
+            {%- for error in errors -%}
+                <p>{{ error.message }}</p>
+            {%- endfor -%}
+        </div>
+    {%- endif -%}
+{% endblock %}
+
+{% block form_label %}
+    {%- if label is not same as(false) -%}
+        {% set label_attr = label_attr|merge({ class: (label_attr.class|default('') ~ ' field-label')|trim }) %}
+        <label{% for attrname, attrvalue in label_attr %} {{ attrname }}="{{ attrvalue }}"{% endfor %}>{{ translation_domain is same as(false) ? label : label|trans(label_translation_parameters, translation_domain) }}{% if required and not compound %}<span class="text-[var(--negative)]"> *</span>{% endif %}</label>
+    {%- endif -%}
+{% endblock %}
+
+{% block form_widget_simple %}
+    {%- set type = type|default('text') -%}
+    {%- set attr = attr|merge({ class: (attr.class|default('') ~ ' field-input')|trim }) -%}
+    <input type="{{ type }}" {{ block('widget_attributes') }} {% if value is not empty %}value="{{ value }}" {% endif %}/>
+{% endblock %}
+
+{% block textarea_widget %}
+    {%- set attr = attr|merge({ class: (attr.class|default('') ~ ' field-input')|trim }) -%}
+    <textarea {{ block('widget_attributes') }}>{{ value }}</textarea>
+{% endblock %}
+
+{% block select_widget %}
+    {%- set attr = attr|merge({ class: (attr.class|default('') ~ ' field-input')|trim }) -%}
+    <select {{ block('widget_attributes') }}{% if multiple %} multiple="multiple"{% endif %}>
+        {%- for choice in choices -%}
+            <option value="{{ choice.value }}"{% if choice is selectedchoice(value) %} selected="selected"{% endif %}>{{ choice.label|trans }}</option>
+        {%- endfor -%}
+    </select>
+{% endblock %}
+
+{% block choice_widget_expanded %}
+    <div class="space-y-2" {{ block('widget_container_attributes') }}>
+        {%- for child in form -%}
+            <label class="flex items-center gap-3 rounded-2xl surface-card px-4 py-3 cursor-pointer transition has-[:checked]:ring-2 ring-transparent" {{ child.vars.required ? '' : '' }}>
+                {{ form_widget(child) }}
+                <span class="text-sm font-bold">{{ child.vars.label }}</span>
+            </label>
+        {%- endfor -%}
+    </div>
+{% endblock %}
+
+{% block checkbox_row %}
+    <label class="flex items-start gap-3 cursor-pointer py-1 {{ attr.class|default('') }}">
+        <span class="mt-0.5">{{ form_widget(form) }}</span>
+        <span class="text-sm font-semibold">{{ form.vars.label|default('') }}</span>
+    </label>
+    {{ form_errors(form) }}
+{% endblock %}
+
+{% block checkbox_widget %}
+    <input type="checkbox" {{ block('widget_attributes') }} {% if value is defined %}value="{{ value }}"{% endif %} {% if checked %}checked="checked"{% endif %} class="w-4 h-4 rounded accent-[var(--accent)]"/>
+{% endblock %}

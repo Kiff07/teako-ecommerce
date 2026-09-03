@@ -1,0 +1,116 @@
+{% extends 'admin/base.html.twig' %}
+{% block title %}{{ product.id ? 'Modifier' : 'Nouveau' }} produit{% endblock %}
+
+{% block body %}
+<div class="flex items-center justify-between mb-6">
+    <div>
+        <a href="{{ path('admin_product_index') }}" class="text-xs font-extrabold text-faint hover:text-[var(--accent)]">← Tous les produits</a>
+        <h1 class="font-display font-bold text-3xl mt-1">{{ product.id ? 'Modifier : ' ~ product.name : 'Nouveau produit' }}</h1>
+    </div>
+    {% if product.id %}
+    <div class="flex gap-2">
+        <a href="{{ path('product_show', { slug: product.slug }) }}" target="_blank" class="btn-ghost rounded-full px-4 py-2 text-xs font-bold">Voir en boutique</a>
+    </div>
+    {% endif %}
+</div>
+
+{{ form_start(form, { attr: { class: 'grid xl:grid-cols-[1fr_1.1fr] gap-6 items-start' } }) }}
+    {{ form_errors(form) }}
+
+    {# ---- left: informations ---- #}
+    <div class="space-y-6">
+        <section class="rounded-3xl surface-card p-6 space-y-5">
+            <h2 class="font-display font-bold text-xl">Informations</h2>
+            {{ form_row(form.name) }}
+            <div class="grid sm:grid-cols-2 gap-5">
+                {{ form_row(form.category) }}
+                {{ form_row(form.tag) }}
+            </div>
+            <div class="grid sm:grid-cols-2 gap-5">
+                {{ form_row(form.price) }}
+                {{ form_row(form.stock) }}
+            </div>
+            {{ form_row(form.isActive) }}
+        </section>
+
+        <section class="rounded-3xl surface-card p-6 space-y-4">
+            <h2 class="font-display font-bold text-xl">Textes</h2>
+            {{ form_row(form.description) }}
+            {{ form_row(form.recipe) }}
+        </section>
+    </div>
+
+    {# ---- right: images manager ---- #}
+    <section class="rounded-3xl surface-card p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="font-display font-bold text-xl">Photos du produit</h2>
+                <p class="text-xs text-faint mt-0.5">JPEG, PNG ou WebP · 5 Mo max · drag &amp; drop pour réordonner</p>
+            </div>
+        </div>
+
+        <div class="mt-5" data-controller="uploader"
+             data-uploader-token="u{{ random() ~ random() }}"
+             {% if product.id %}data-uploader-product-id="{{ product.id }}"{% endif %}
+             data-uploader-url-prefix="">
+
+            {# hidden state written before submit #}
+            <input type="hidden" name="{{ form.imagesJson.vars.full_name }}" value="{{ imagesJson }}" data-uploader-target="imagesJson">
+            {# prevent form_end()/form_rest() from rendering a second empty field with
+               the same name — the empty duplicate would override the real value in POST #}
+            {% do form.imagesJson.setRendered() %}
+
+            {# drop zone #}
+            <div data-uploader-target="drop"
+                 class="relative rounded-3xl border-2 border-dashed border-[var(--line-strong)] p-8 text-center cursor-pointer transition-colors hover:border-[var(--accent)] hover:bg-[var(--accent-soft)]/40"
+                 role="button" tabindex="0" aria-label="Importer des images">
+                <input type="file" accept="image/jpeg,image/png,image/webp" multiple class="hidden" data-uploader-target="input" data-action="uploader#handleFiles">
+                <p class="text-4xl" aria-hidden="true">📸</p>
+                <p class="font-extrabold mt-2">Glissez vos photos ici</p>
+                <p class="text-xs text-faint font-semibold mt-1">ou <span class="text-[var(--accent)] font-black">cliquez pour parcourir</span></p>
+            </div>
+
+            {# hint when empty #}
+            <p data-uploader-target="hint" class="text-center text-xs text-faint mt-4 hidden">Astuce : la première image devient la couverture du produit.</p>
+
+            {# queue #}
+            <ul data-uploader-target="queue" class="mt-4 grid grid-cols-3 sm:grid-cols-4 gap-3" aria-label="Images du produit"></ul>
+
+            {# crop modal #}
+            <div data-uploader-target="cropModal" class="hidden fixed inset-0 z-50 p-4 grid place-items-center">
+                <div class="absolute inset-0 bg-black/70" data-action="click->uploader#closeCrop"></div>
+                <div class="relative w-full max-w-3xl rounded-3xl bg-white p-5 shadow-2xl anim-scale-in" style="color:#37251b">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-display font-bold text-xl">Recadrer l'image</h3>
+                        <button type="button" class="w-9 h-9 grid place-items-center rounded-full hover:bg-neutral-100" data-action="uploader#closeCrop">✕</button>
+                    </div>
+                    <div class="relative select-none overflow-hidden rounded-2xl bg-neutral-100 touch-none cursor-move"
+                         data-action="pointerdown->uploader#_startDrag">
+                        <img data-uploader-target="cropImg" src="" alt="Aperçu" class="block w-full" draggable="false">
+                        <div data-uploader-target="cropBox" class="absolute border-2 border-[var(--accent)] shadow-[0_0_0_9999px_rgba(0,0,0,0.55)] pointer-events-none rounded-sm"></div>
+                    </div>
+                    <div class="flex flex-wrap items-center justify-between gap-3 mt-4">
+                        <div class="flex gap-2 flex-wrap">
+                            <button type="button" data-action="uploader#setRatio" data-ratio="0" class="px-3 py-1.5 rounded-full text-xs font-bold border">Libre</button>
+                            <button type="button" data-action="uploader#setRatio" data-ratio="1" class="px-3 py-1.5 rounded-full text-xs font-bold border">1:1</button>
+                            <button type="button" data-action="uploader#setRatio" data-ratio="0.75" class="px-3 py-1.5 rounded-full text-xs font-bold border">3:4</button>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span data-uploader-target="spinner" class="spinner hidden text-[var(--accent)]"></span>
+                            <button type="button" class="px-5 py-2 rounded-full border text-sm font-bold" data-action="uploader#closeCrop">Annuler</button>
+                            <button type="button" class="px-6 py-2 rounded-full text-white text-sm font-extrabold" style="background:var(--accent)" data-action="uploader#applyCrop">Appliquer</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="xl:col-span-2 flex flex-wrap items-center justify-end gap-3 pt-2 pb-6">
+        {% if product.id %}<a href="{{ path('admin_product_index') }}" class="btn-ghost rounded-full px-5 py-3 text-sm font-bold">Annuler</a>{% endif %}
+        <button type="submit" class="btn-accent rounded-full px-8 py-3 text-sm font-extrabold text-white">
+            {{ product.id ? 'Enregistrer les modifications' : 'Créer le produit' }}
+        </button>
+    </div>
+{{ form_end(form) }}
+{% endblock %}

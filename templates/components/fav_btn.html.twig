@@ -1,0 +1,16 @@
+{# Favourites heart. product, style: 'overlay'|'plain', iconClass #}
+{% set active = is_fav(product) %}
+{% if style|default('plain') == 'overlay' %}
+<button type="button" data-fav-toggle="{{ product.id }}" data-fav-active="{{ active ? '1' : '0' }}" aria-pressed="{{ active ? 'true' : 'false' }}"
+        aria-label="Ajouter {{ product.name }} aux favoris"
+        class="grid place-items-center w-9 h-9 rounded-full shadow backdrop-blur-sm transition-all duration-300 hover:scale-110 {{ active ? 'text-[var(--negative)] bg-white' : 'text-cocoa-800 bg-white/90 hover:text-[var(--negative)]' }}">
+    <svg viewBox="0 0 24 24" class="w-[18px] h-[18px]" fill="{{ active ? 'currentColor' : 'none' }}" stroke="currentColor" stroke-width="1.9"><path d="M12 20.6S4 15.7 2.4 11.7C1 8.2 3 4.9 6.3 4.6c2-.2 3.8.9 4.7 2.5h2c.9-1.6 2.7-2.7 4.7-2.5 3.3.3 5.3 3.6 3.9 7.1C20 15.7 12 20.6 12 20.6z"/></svg>
+</button>
+{% else %}
+<button type="button" data-fav-toggle="{{ product.id }}" data-fav-active="{{ active ? '1' : '0' }}" aria-pressed="{{ active ? 'true' : 'false' }}"
+        aria-label="Ajouter {{ product.name }} aux favoris"
+        class="inline-flex items-center gap-2 text-sm font-bold transition-colors {{ active ? 'text-[var(--negative)]' : 'text-faint hover:text-[var(--negative)]' }}">
+    <svg viewBox="0 0 24 24" class="w-4 h-4" fill="{{ active ? 'currentColor' : 'none' }}" stroke="currentColor" stroke-width="2"><path d="M12 20.6S4 15.7 2.4 11.7C1 8.2 3 4.9 6.3 4.6c2-.2 3.8.9 4.7 2.5h2c.9-1.6 2.7-2.7 4.7-2.5 3.3.3 5.3 3.6 3.9 7.1C20 15.7 12 20.6 12 20.6z"/></svg>
+    <span>{{ active ? 'Retirer des favoris' : 'Ajouter aux favoris' }}</span>
+</button>
+{% endif %}

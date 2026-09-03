@@ -1,0 +1,104 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon panier — Teako Gourmet Drinks{% endblock %}
+
+{% set hasItems = cart is not null and cart.items|length > 0 %}
+
+{% block body %}
+<section class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 pt-10 lg:pt-16 pb-24" data-cart-page>
+    <nav aria-label="Fil d'Ariane" class="text-xs font-bold text-faint mb-6">
+        <a href="{{ path('home') }}" class="hover:text-[var(--accent)]">Accueil</a>
+        <span class="mx-2">/</span><span>Mon panier</span>
+    </nav>
+
+    <div class="flex items-end justify-between gap-4" data-reveal>
+        <h1 class="font-display font-semibold text-5xl sm:text-6xl">Mon <em class="italic">panier</em></h1>
+        <a href="{{ path('menu') }}" class="btn-ghost hidden sm:inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold">← Continuer la carte</a>
+    </div>
+
+    {# -------- empty state -------- #}
+    <div data-cart-empty class="{{ hasItems ? 'hidden' : '' }} mt-12 text-center py-20 rounded-[2rem] surface-card" data-reveal>
+        <p class="text-6xl" aria-hidden="true">🥤</p>
+        <h2 class="font-display text-3xl mt-6">Votre panier est vide</h2>
+        <p class="text-soft mt-2 max-w-sm mx-auto">Parcourez la carte et ajoutez vos créations Teako préférées.</p>
+        <a href="{{ path('menu') }}" class="btn-accent inline-flex rounded-full px-7 py-3.5 mt-7 text-sm font-extrabold">Découvrir la carte</a>
+    </div>
+
+    {# -------- lines -------- #}
+    <div data-cart-body class="{{ hasItems ? '' : 'hidden' }} mt-10">
+        {% if hasItems %}
+        <div class="hidden md:grid grid-cols-[1fr_130px_160px_120px_40px] gap-4 pb-3 border-b divider text-[11px] font-black uppercase tracking-[0.15em] text-faint px-4" data-reveal>
+            <span>Produit</span><span class="text-right">Prix unitaire</span><span class="text-center">Quantité</span><span class="text-right">Total</span><span></span>
+        </div>
+
+        <div class="divide-y divider">
+            {% for item in cart.items %}
+                {% set p = item.product %}
+            <div class="cart-line grid grid-cols-2 md:grid-cols-[1fr_130px_160px_120px_40px] gap-3 md:gap-4 items-center py-5 px-1 md:px-4" data-cart-row-id="{{ item.id }}" style="animation-delay:{{ loop.index * 60 }}ms">
+                <a href="{{ path('product_show', { slug: p.slug }) }}" class="flex items-center gap-4 min-w-0 col-span-2 md:col-span-1">
+                    <span class="relative shrink-0 w-20 h-20 rounded-2xl overflow-hidden ring-line bg-surface-3">
+                        {% if p.images|length > 0 %}
+                            {{ include('components/blur_picture.html.twig', { url: p|product_image('thumb'), blur: p|product_image('blur'), alt: p.name, ratio: '1 / 1' }) }}
+                        {% else %}
+                            <span class="w-full h-full grid place-items-center font-display italic text-2xl">{{ p.name|first|upper }}</span>
+                        {% endif %}
+                    </span>
+                    <span class="min-w-0">
+                        <span class="font-display font-semibold text-lg block leading-snug">{{ p.name }}</span>
+                        <span class="text-xs text-faint font-bold">{{ p.category.name|default('Teako') }}</span>
+                    </span>
+                </a>
+
+                <div class="text-right md:text-right text-sm font-bold text-soft">
+                    {{ p.priceCents|money }}<span class="block text-[10px] text-faint">/ unité</span>
+                </div>
+
+                <div class="flex justify-between md:justify-center">
+                    <div class="inline-flex items-center rounded-full surface-card overflow-hidden" data-stepper>
+                        <button type="button" data-step="minus" class="w-9 h-9 grid place-items-center text-lg font-bold text-soft hover:bg-surface-3 disabled:opacity-30"
+                                data-cart-minus data-line-id="{{ item.id }}" aria-label="Diminuer" {{ item.quantity <= 1 ? 'disabled' : '' }}>−</button>
+                        <input type="number" data-qty data-line-id="{{ item.id }}" value="{{ item.quantity }}" min="1" max="{{ p.stock }}" inputmode="numeric"
+                               class="w-10 bg-transparent text-center font-extrabold tabular-nums focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
+                        <button type="button" data-step="plus" class="w-9 h-9 grid place-items-center text-lg font-bold text-soft hover:bg-surface-3 disabled:opacity-30"
+                                data-cart-plus data-line-id="{{ item.id }}" aria-label="Augmenter" {{ item.quantity >= p.stock ? 'disabled' : '' }}>+</button>
+                    </div>
+                </div>
+
+                <div class="text-right font-extrabold text-base tabular-nums" data-row-total>{{ item.lineTotalCents|money }}</div>
+                <div class="flex justify-end">
+                    <button type="button" data-cart-remove data-line-id="{{ item.id }}" class="w-9 h-9 grid place-items-center rounded-full text-faint hover:text-[var(--negative)] hover:bg-[var(--negative)]/10 transition-colors" aria-label="Retirer {{ p.name }}">✕</button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="mt-8 flex flex-col lg:flex-row gap-6 lg:items-start">
+            <div class="lg:flex-1 rounded-2xl surface-card p-5 text-sm" data-reveal>
+                <p class="font-black uppercase tracking-widest text-[11px] text-faint mb-2">Livraison & retrait</p>
+                <ul class="space-y-2 text-soft text-sm font-semibold">
+                    <li>🚶 <strong>Retrait au bar</strong> — gratuit, Antsahavola (préparé en 10-15 min)</li>
+                    <li>🛵 <strong>Livraison Antananarivo</strong> — 5 000 Ar (offerte dès 80 000 Ar)</li>
+                    <li>💵 Paiement <strong>à la réception</strong> (espèces / Mobile Money)</li>
+                </ul>
+            </div>
+
+            <div class="lg:w-96 rounded-[1.8rem] p-6 text-white shadow-[var(--card-shadow-lg)] shrink-0" style="background:linear-gradient(150deg,#37251b,#5f4331)" data-reveal>
+                <h2 class="font-display font-semibold text-2xl">Résumé</h2>
+                <div class="mt-4 space-y-2 text-sm">
+                    <div class="flex justify-between text-white/80"><span>Articles</span><span data-cart-count>{{ cartJson.count }}</span></div>
+                    <div class="flex justify-between text-white/80"><span>Livraison</span><span>Calculée à la réception</span></div>
+                </div>
+                <div class="border-t border-white/20 mt-4 pt-4 flex items-end justify-between">
+                    <span class="text-white/85 font-bold">Total</span>
+                    <span class="font-display text-3xl font-bold tabular-nums" data-cart-total>{{ cartJson.totalCents|money }}</span>
+                </div>
+                <a href="{{ path('order_checkout') }}" class="mt-6 w-full grid place-items-center rounded-full py-4 font-extrabold text-sm text-[#37251b] transition-transform hover:scale-[1.02]" style="background:linear-gradient(120deg,#f2c078,#e2a14e)">
+                    Passer la commande →
+                </a>
+                <a href="{{ path('menu') }}" class="block text-center mt-3 text-xs font-bold text-white/70 hover:text-white">ou continuer mes emplettes</a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

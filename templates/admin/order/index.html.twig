@@ -1,0 +1,68 @@
+{% extends 'admin/base.html.twig' %}
+{% set statusMeta = {
+    pending:    { label: 'En attente', color: '#f59e0b' },
+    paid:       { label: 'Payée',      color: '#3b82f6' },
+    shipped:    { label: 'Expédiée',   color: '#8b5cf6' },
+    delivered:  { label: 'Livrée',     color: '#22c55e' },
+    cancelled:  { label: 'Annulée',    color: '#ef4444' }
+} %}
+{% block title %}Commandes{% endblock %}
+
+{% block body %}
+<div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+    <div>
+        <h1 class="font-display font-bold text-3xl">Commandes</h1>
+        <p class="text-sm text-soft mt-1">{{ total }} commande(s)</p>
+    </div>
+    <form method="get" action="{{ path('admin_order_index') }}" class="flex gap-2">
+        <input type="search" name="q" value="{{ q }}" placeholder="N°, client, e-mail…" class="field-input !w-60">
+        <button class="btn-ghost rounded-xl px-4 py-2 text-sm font-bold">Chercher</button>
+    </form>
+</div>
+
+<div class="flex flex-wrap gap-2 mb-5">
+    <a href="{{ path('admin_order_index') }}" class="rounded-full px-4 py-2 text-xs font-extrabold {{ status == '' ? 'text-white' : 'text-soft surface-card' }}" {{ status == '' ? 'style=background:var(--accent)' : '' }}>Toutes ({{ total }})</a>
+    {% for code, meta in statusMeta %}
+    <a href="{{ path('admin_order_index', { status: code }) }}" class="rounded-full px-4 py-2 text-xs font-extrabold {{ status == code ? 'text-white' : 'text-soft surface-card' }}" {{ status == code ? 'style=background:var(--accent)' : '' }}>{{ meta.label }} ({{ counts[code] }})</a>
+    {% endfor %}
+</div>
+
+<div class="rounded-3xl surface-card overflow-hidden">
+    <div class="overflow-x-auto">
+    <table class="w-full text-sm min-w-[860px]">
+        <thead><tr class="border-b divider bg-surface-2/60">
+            <th class="th-cell">Commande</th><th class="th-cell">Client</th><th class="th-cell text-right">Total</th>
+            <th class="th-cell text-right">Articles</th><th class="th-cell">Statut</th><th class="th-cell text-right">Date</th><th class="th-cell text-right"></th>
+        </tr></thead>
+        <tbody class="divide-y divider">
+        {% for order in orders %}
+        <tr class="hover:bg-surface-2/50 transition-colors">
+            <td class="td-cell font-black tracking-wide">{{ order.orderNumber }}</td>
+            <td class="td-cell"><span class="font-bold block">{{ order.customerName }}</span><span class="text-xs text-faint">{{ order.customerPhone ? order.customerPhone ~ ' · ' }}{{ order.customerEmail }}</span></td>
+            <td class="td-cell text-right font-extrabold tabular-nums">{{ (order.totalAmount * 100)|round|money }}</td>
+            <td class="td-cell text-right"><span class="px-2.5 py-1 rounded-full bg-surface-3 text-xs font-black tabular-nums">{{ order.itemCount }}</span></td>
+            <td class="td-cell">
+                {% set meta = statusMeta[order.status.value] %}
+                <span class="px-3 py-1 rounded-full text-[11px] font-black text-white inline-flex items-center gap-1.5" style="background:{{ meta.color }}"><span class="w-1.5 h-1.5 rounded-full bg-white/80"></span>{{ meta.label }}</span>
+            </td>
+            <td class="td-cell text-right text-faint font-semibold">{{ order.createdAt|date('d/m/Y H:i') }}</td>
+            <td class="td-cell text-right"><a href="{{ path('admin_order_show', { id: order.id }) }}" class="btn-ghost rounded-xl px-4 py-1.5 text-xs font-bold inline-block">Gérer →</a></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="td-cell text-center py-14 text-soft">Aucune commande trouvée.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+
+{% if pages > 1 %}
+<div class="flex justify-center gap-2 mt-6">
+    {% if page > 1 %}<a href="{{ path('admin_order_index', { page: page - 1, status: status, q: q }) }}" class="btn-ghost rounded-xl px-4 py-2 text-sm font-bold">←</a>{% endif %}
+    {% for i in range(max(1, page - 2), min(pages, page + 2)) %}
+        <a href="{{ path('admin_order_index', { page: i, status: status, q: q }) }}" class="rounded-xl w-10 h-10 grid place-items-center text-sm font-bold {{ i == page ? 'text-white' : 'surface-card' }}" {{ i == page ? 'style=background:var(--accent)' : '' }}>{{ i }}</a>
+    {% endfor %}
+    {% if page < pages %}<a href="{{ path('admin_order_index', { page: page + 1, status: status, q: q }) }}" class="btn-ghost rounded-xl px-4 py-2 text-sm font-bold">→</a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

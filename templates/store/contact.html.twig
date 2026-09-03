@@ -1,0 +1,47 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Contact — Teako Gourmet Drinks{% endblock %}
+
+{% block body %}
+<section class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 pt-10 lg:pt-16 pb-24">
+    <nav aria-label="Fil d'Ariane" class="text-xs font-bold text-faint mb-6"><a href="{{ path('home') }}" class="hover:text-[var(--accent)]">Accueil</a><span class="mx-2">/</span><span>Contact</span></nav>
+
+    <div class="grid lg:grid-cols-2 gap-10 items-start">
+        <div data-reveal>
+            <p class="text-[11px] font-black uppercase tracking-[0.24em]" style="color:var(--accent)">On vous répond vite</p>
+            <h1 class="font-display font-semibold text-5xl sm:text-6xl mt-2">Parlons <em class="italic">gourmandises</em></h1>
+            <p class="mt-5 text-soft text-lg">Une question, une commande groupée, un événement ? Écrivez-nous ou passez directement au bar.</p>
+
+            <div class="mt-8 space-y-4">
+                <div class="flex gap-4 rounded-2xl surface-card p-5 items-start">
+                    <span class="text-2xl" aria-hidden="true">📍</span>
+                    <div><p class="font-black uppercase tracking-widest text-[10px] text-faint">Adresse</p><p class="font-semibold mt-1">Lot IBF 9 Antsahavola, 6 Rue Elysée Ravelotsalama — Antananarivo</p></div>
+                </div>
+                <div class="flex gap-4 rounded-2xl surface-card p-5 items-start">
+                    <span class="text-2xl" aria-hidden="true">📞</span>
+                    <div><p class="font-black uppercase tracking-widest text-[10px] text-faint">Téléphone / WhatsApp</p><p class="font-semibold mt-1">+261 34 00 000 00</p></div>
+                </div>
+                <div class="flex gap-4 rounded-2xl surface-card p-5 items-start">
+                    <span class="text-2xl" aria-hidden="true">✉️</span>
+                    <div><p class="font-black uppercase tracking-widest text-[10px] text-faint">E-mail</p><p class="font-semibold mt-1">hello@teako.mg</p></div>
+                </div>
+                <div class="flex gap-4 rounded-2xl surface-card p-5 items-start">
+                    <span class="text-2xl" aria-hidden="true">⏰</span>
+                    <div><p class="font-black uppercase tracking-widest text-[10px] text-faint">Horaires du bar</p><p class="font-semibold mt-1">Tous les jours · 8h00 – 20h00</p></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="rounded-[2rem] overflow-hidden surface-card min-h-[24rem] relative" data-reveal>
+            <div class="absolute inset-0 bg-surface-2 diag-texture grid place-items-center text-center p-8">
+                <div>
+                    <p class="text-5xl mb-4" aria-hidden="true">🗺️</p>
+                    <p class="font-display text-2xl font-semibold">Antsahavola, cœur d’Antananarivo</p>
+                    <p class="text-soft mt-2 max-w-sm mx-auto">Cherchez le comptoir coloré, l’odeur de café et la musique douce : vous êtes arrivés.</p>
+                    <a href="{{ path('menu') }}" class="btn-accent inline-flex rounded-full px-6 py-3 mt-6 text-sm font-extrabold">Commander avant de venir</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

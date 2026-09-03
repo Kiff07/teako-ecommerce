@@ -1,0 +1,22 @@
+{% extends 'admin/base.html.twig' %}
+{% block title %}{{ category.id ? 'Modifier' : 'Nouvelle' }} catégorie{% endblock %}
+
+{% block body %}
+<a href="{{ path('admin_category_index') }}" class="text-xs font-extrabold text-faint hover:text-[var(--accent)]">← Toutes les catégories</a>
+<h1 class="font-display font-bold text-3xl mt-1 mb-6">{{ category.id ? 'Modifier la catégorie' : 'Nouvelle catégorie' }}</h1>
+
+<div class="max-w-2xl rounded-3xl surface-card p-6">
+    {{ form_start(form) }}
+    {{ form_errors(form) }}
+    <div class="space-y-5">
+        {{ form_row(form.name) }}
+        {{ form_row(form.slug) }}
+        {{ form_row(form.description) }}
+    </div>
+    <div class="mt-6 flex justify-end gap-3">
+        <a href="{{ path('admin_category_index') }}" class="btn-ghost rounded-full px-5 py-2.5 text-sm font-bold">Annuler</a>
+        <button type="submit" class="btn-accent rounded-full px-7 py-2.5 text-sm font-extrabold text-white">Enregistrer</button>
+    </div>
+    {{ form_end(form) }}
+</div>
+{% endblock %}

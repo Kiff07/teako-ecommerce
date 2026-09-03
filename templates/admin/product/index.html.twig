@@ -1,0 +1,87 @@
+{% extends 'admin/base.html.twig' %}
+{% block title %}Produits{% endblock %}
+
+{% block body %}
+<div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+    <div>
+        <h1 class="font-display font-bold text-3xl">Produits</h1>
+        <p class="text-sm text-soft mt-1">{{ total }} référence(s) en base.</p>
+    </div>
+    <a href="{{ path('admin_product_new') }}" class="btn-accent rounded-full px-5 py-2.5 text-sm font-extrabold text-white">＋ Nouveau produit</a>
+</div>
+
+<form method="get" action="{{ path('admin_product_index') }}" class="flex flex-wrap items-center gap-2 mb-5">
+    <input type="search" name="q" value="{{ q }}" placeholder="Rechercher un produit…" class="field-input !w-64">
+    <button class="btn-ghost rounded-xl px-4 py-2 text-sm font-bold">Rechercher</button>
+    {% if q %}<a href="{{ path('admin_product_index') }}" class="text-xs font-bold text-faint">Réinitialiser</a>{% endif %}
+</form>
+
+<div class="flex flex-wrap gap-2 mb-5">
+    {% for code, label in { '': 'Tous', 'actifs': 'Actifs', 'inactifs': 'Masqués', 'rupture': 'Rupture' } %}
+    <a href="{{ path('admin_product_index', { status: code, q: q }) }}"
+       class="rounded-full px-4 py-2 text-xs font-extrabold transition-colors {{ status == code ? 'text-white' : 'text-soft surface-card hover:bg-surface-3' }}" {% if status == code %}style="background:var(--accent)"{% endif %}>{{ label }}</a>
+    {% endfor %}
+</div>
+
+<div class="rounded-3xl surface-card overflow-hidden">
+    <div class="overflow-x-auto">
+    <table class="w-full text-sm min-w-[760px]">
+        <thead><tr class="border-b divider bg-surface-2/60"><th class="th-cell">Produit</th><th class="th-cell">Catégorie</th><th class="th-cell text-right">Prix</th><th class="th-cell text-right">Stock</th><th class="th-cell text-right">Ventes</th><th class="th-cell">Visible</th><th class="th-cell text-right">Actions</th></tr></thead>
+        <tbody class="divide-y divider">
+        {% for p in products %}
+            <tr class="hover:bg-surface-2/50 transition-colors">
+                <td class="td-cell">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <span class="shrink-0 w-12 h-12 rounded-xl overflow-hidden bg-surface-3 grid place-items-center font-display italic text-lg text-faint">
+                            {% if p.images|length > 0 %}<img src="{{ p|product_image('thumb') }}" class="w-full h-full object-cover" alt="">{% else %}{{ p.name|first|upper }}{% endif %}
+                        </span>
+                        <div class="min-w-0">
+                            <a href="{{ path('admin_product_edit', { id: p.id }) }}" class="font-bold block truncate hover:text-[var(--accent)]">{{ p.name }}</a>
+                            <span class="text-xs text-faint">/{{ p.slug }}</span>
+                        </div>
+                    </div>
+                </td>
+                <td class="td-cell text-faint font-semibold">{{ p.category.name|default('—') }}</td>
+                <td class="td-cell text-right font-extrabold tabular-nums">{{ p.priceCents|money }}</td>
+                <td class="td-cell text-right">
+                    <span class="px-2.5 py-1 rounded-full text-xs font-black {{ p.isOutOfStock ? 'text-white' : (p.stock <= 5 ? 'text-amber-700 bg-amber-100' : 'text-faint bg-surface-3') }}" style="{{ p.isOutOfStock ? 'background:var(--negative)' : '' }}">{{ p.isOutOfStock ? '0' : p.stock }}</span>
+                </td>
+                <td class="td-cell text-right text-faint font-semibold tabular-nums">{{ p.salesCount }}</td>
+                <td class="td-cell">
+                    <button data-admin-post="{{ path('admin_product_toggle', { id: p.id }) }}" data-toast="Visibilité mise à jour"
+                            class="relative inline-flex items-center gap-2 text-xs font-extrabold {{ p.isActive ? 'text-[var(--positive)]' : 'text-faint' }}">
+                        <span class="w-8 h-4.5 h-[18px] rounded-full relative transition-colors" style="background:{{ p.isActive ? 'var(--positive)' : 'var(--line-strong)' }}">
+                            <span class="absolute top-[2px] w-[14px] h-[14px] rounded-full bg-white shadow transition-all" style="left:{{ p.isActive ? 'calc(100% - 16px)' : '2px' }}"></span>
+                        </span>
+                        {{ p.isActive ? 'En ligne' : 'Masqué' }}
+                    </button>
+                </td>
+                <td class="td-cell">
+                    <div class="flex justify-end gap-1.5">
+                        <a href="{{ path('admin_product_edit', { id: p.id }) }}" class="px-3 py-1.5 rounded-lg btn-ghost text-xs font-bold">Modifier</a>
+                        <a href="{{ path('product_show', { slug: p.slug }) }}" target="_blank" class="px-3 py-1.5 rounded-lg btn-ghost text-xs font-bold" title="Voir en boutique">👁</a>
+                        <button data-admin-post="{{ path('admin_product_delete', { id: p.id }) }}"
+                                data-confirm="Supprimer « {{ p.name }} » et toutes ses images ?"
+                                data-toast="Produit supprimé"
+                                class="px-3 py-1.5 rounded-lg text-xs font-bold text-[var(--negative)] hover:bg-[var(--negative)]/10">Suppr.</button>
+                    </div>
+                </td>
+            </tr>
+        {% else %}
+            <tr><td colspan="7" class="td-cell text-center py-12 text-soft">Aucun produit trouvé.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+
+{% if pages > 1 %}
+<div class="flex items-center justify-center gap-2 mt-6">
+    {% if page > 1 %}<a href="{{ path('admin_product_index', { page: page - 1, q: q, status: status }) }}" class="btn-ghost rounded-xl px-4 py-2 text-sm font-bold">←</a>{% endif %}
+    {% for i in range(max(1, page - 2), min(pages, page + 2)) %}
+    <a href="{{ path('admin_product_index', { page: i, q: q, status: status }) }}" class="rounded-xl w-10 h-10 grid place-items-center text-sm font-bold {{ i == page ? 'text-white' : 'surface-card' }}" {% if i == page %}style="background:var(--accent)"{% endif %}>{{ i }}</a>
+    {% endfor %}
+    {% if page < pages %}<a href="{{ path('admin_product_index', { page: page + 1, q: q, status: status }) }}" class="btn-ghost rounded-xl px-4 py-2 text-sm font-bold">→</a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

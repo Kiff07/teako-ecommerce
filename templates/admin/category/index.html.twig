@@ -1,0 +1,36 @@
+{% extends 'admin/base.html.twig' %}
+{% block title %}Catégories{% endblock %}
+
+{% block body %}
+<div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+    <div>
+        <h1 class="font-display font-bold text-3xl">Catégories</h1>
+        <p class="text-sm text-soft mt-1">Organisez la carte de la boutique.</p>
+    </div>
+    <a href="{{ path('admin_category_new') }}" class="btn-accent rounded-full px-5 py-2.5 text-sm font-extrabold text-white">＋ Nouvelle catégorie</a>
+</div>
+
+<div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    {% for c in categories %}
+    <div class="rounded-3xl surface-card p-5 flex flex-col gap-3" data-reveal>
+        <div class="flex items-center justify-between">
+            <span class="font-display font-bold text-lg leading-tight">{{ c.name }}</span>
+            <span class="rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-wider text-white" style="background:linear-gradient(120deg,var(--gold),var(--accent))">{{ c.products|length }} produits</span>
+        </div>
+        <p class="text-[13px] text-faint">/{{ c.slug }}</p>
+        <p class="text-sm text-soft line-clamp-2">{{ c.description|default('') }}</p>
+        <div class="mt-auto flex gap-2 pt-2">
+            <a href="{{ path('admin_category_edit', { id: c.id }) }}" class="flex-1 text-center btn-ghost rounded-xl py-2 text-xs font-bold">Modifier</a>
+            {% if c.products|length == 0 %}
+            <button data-admin-post="{{ path('admin_category_delete', { id: c.id }) }}"
+                    data-confirm="Supprimer la catégorie « {{ c.name }} » ?"
+                    data-toast="Catégorie supprimée"
+                    class="px-4 rounded-xl text-xs font-bold text-[var(--negative)] hover:bg-[var(--negative)]/10">Suppr.</button>
+            {% endif %}
+        </div>
+    </div>
+    {% else %}
+    <p class="sm:col-span-2 lg:col-span-3 text-center py-16 text-soft">Aucune catégorie. Créez-en une pour structurer la carte.</p>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,156 @@
+{% extends 'admin/base.html.twig' %}
+{% set statuses = [
+    { code: 'pending', label: 'En attente', color: '#f59e0b' },
+    { code: 'paid', label: 'Payées', color: '#3b82f6' },
+    { code: 'shipped', label: 'Expédiées', color: '#8b5cf6' },
+    { code: 'delivered', label: 'Livrées', color: '#22c55e' },
+    { code: 'cancelled', label: 'Annulées', color: '#ef4444' }
+] %}
+{% set maxRev = series.maxRevenue|default(0) %}
+{% set maxQty = topMax|default(1) %}
+
+{% block title %}Tableau de bord{% endblock %}
+
+{% block body %}
+<div class="flex flex-wrap items-center justify-between gap-3 mb-8">
+    <div>
+        <h1 class="font-display font-bold text-3xl sm:text-4xl">Salut, {{ app.user.name|split(' ')|first }} 👋</h1>
+        <p class="text-sm text-soft mt-1">Voici l'activité de la boutique Teako.</p>
+    </div>
+    <div class="flex gap-2">
+        <a href="{{ path('admin_product_new') }}" class="btn-accent rounded-full px-5 py-2.5 text-sm font-extrabold text-white">+ Nouveau produit</a>
+        <a href="{{ path('home') }}" class="btn-ghost rounded-full px-5 py-2.5 text-sm font-bold hidden sm:inline-flex">Voir la boutique</a>
+    </div>
+</div>
+
+{# stat cards #}
+<div class="grid sm:grid-cols-2 xl:grid-cols-4 gap-4" data-stagger-grid>
+    {% set cards = [
+        { label: 'Chiffre d’affaires du jour', icon: '💰', value: overview.todayRevenueCents, delta: overview.todayCount, deltaLabel: 'commandes aujourd’hui', color: '#d05f3a' },
+        { label: 'CA — 30 derniers jours', icon: '📈', value: overview.monthRevenueCents, delta: overview.monthCount, deltaLabel: 'commandes sur 30 j', color: '#c77f26' },
+        { label: 'Total des ventes', icon: '🏆', value: overview.totalRevenueCents, delta: overview.totalCount, deltaLabel: 'commandes au total', color: '#5f4331' },
+        { label: 'Panier moyen', icon: '🧾', value: overview.averageCents, delta: overview.statusCounts.pending, deltaLabel: 'commandes en attente', color: '#8aa34e' },
+    ] %}
+    {% for card in cards %}
+    <div class="stat-card rounded-3xl surface-card p-5" data-reveal>
+        <div class="flex items-center justify-between">
+            <span class="text-[11px] font-black uppercase tracking-widest text-faint">{{ card.label }}</span>
+            <span class="text-xl" aria-hidden="true">{{ card.icon }}</span>
+        </div>
+        <p class="font-display font-bold text-3xl mt-3 tabular-nums">
+            <span data-count-up data-count-up="{{ (card.value / 100)|round }}">0</span> <span class="text-base font-body font-bold">Ar</span>
+        </p>
+        <p class="text-xs font-bold mt-1.5" style="color:{{ card.color }}">{{ card.delta }} <span class="text-faint font-semibold">{{ card.deltaLabel }}</span></p>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="grid lg:grid-cols-5 gap-4 mt-4">
+    {# bar chart #}
+    <div class="lg:col-span-3 rounded-3xl surface-card p-6" data-reveal>
+        <div class="flex items-center justify-between">
+            <h2 class="font-display font-bold text-xl">Revenus — 14 derniers jours</h2>
+            <span class="rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-widest text-white" style="background:var(--accent)">en Ariary</span>
+        </div>
+        <div class="mt-6 flex items-end gap-[3px] h-44" aria-label="Graphique des revenus">
+            {% for rev in series.revenue %}
+                {% set pct = maxRev > 0 ? (rev / maxRev * 100)|round : 0 %}
+                <div class="flex-1 flex flex-col justify-end items-center h-full group" title="{{ series.labels[loop.index0] }} — {{ rev }} Ar">
+                    <div class="w-full rounded-t-md transition-all duration-700 group-hover:opacity-80"
+                         style="height:{{ pct > 0 ? pct : 1.5 }}%;min-height:{{ pct > 0 ? '6px' : '3px' }};background:linear-gradient(180deg,{{ rev > 0 ? 'var(--gold)' : 'var(--line-strong)' }},{{ rev > 0 ? 'var(--accent)' : 'var(--line-strong)' }});transform-origin:bottom;animation:growBar .9s cubic-bezier(.22,1,.36,1) both;animation-delay:{{ loop.index0 * 45 }}ms">
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <style>@keyframes growBar{from{transform:scaleY(0)}to{transform:scaleY(1)}}</style>
+        <div class="mt-3 flex justify-between text-[10px] font-bold text-faint">
+            <span>{{ series.labels|first }}</span><span>{{ series.labels|last }}</span>
+        </div>
+    </div>
+
+    {# top products #}
+    <div class="lg:col-span-2 rounded-3xl surface-card p-6" data-reveal>
+        <h2 class="font-display font-bold text-xl">Top des ventes</h2>
+        <ul class="mt-5 space-y-4">
+            {% for p in top %}
+            <li>
+                <div class="flex justify-between text-sm mb-1.5">
+                    <span class="font-bold truncate pr-2">#{{ loop.index }} {{ p.name }}</span>
+                    <span class="shrink-0 text-faint font-semibold tabular-nums">{{ p.qty }} vendus</span>
+                </div>
+                <div class="h-2.5 rounded-full overflow-hidden bg-surface-3">
+                    <div data-chart-bar data-chart-bar="{{ maxQty > 0 ? (p.qty / maxQty * 100)|round : 0 }}" class="h-full rounded-full" style="width:0%;background:linear-gradient(90deg,var(--gold),var(--accent))"></div>
+                </div>
+            </li>
+            {% endfor %}
+            {% if top is empty %}<p class="text-sm text-soft py-6 text-center">Aucune vente sur la période.</p>{% endif %}
+        </ul>
+    </div>
+</div>
+
+{# order statuses + low stock #}
+<div class="grid lg:grid-cols-2 gap-4 mt-4">
+    <div class="rounded-3xl surface-card p-6" data-reveal>
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="font-display font-bold text-xl">Commandes par statut</h2>
+            <a href="{{ path('admin_order_index') }}" class="text-xs font-extrabold text-[var(--accent)]">Tout voir →</a>
+        </div>
+        <div class="flex flex-wrap gap-2">
+            {% for s in statuses %}
+            <a href="{{ path('admin_order_index', { status: s.code }) }}" class="flex items-center gap-2 rounded-full px-4 py-2.5 surface-card text-sm font-bold hover:scale-105 transition-transform">
+                <span class="w-2.5 h-2.5 rounded-full" style="background:{{ s.color }}"></span>{{ s.label }}
+                <span class="tabular-nums">{{ overview.statusCounts[s.code] }}</span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="rounded-3xl surface-card p-6" data-reveal>
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="font-display font-bold text-xl flex items-center gap-2">⚠️ Stock faible</h2>
+            <a href="{{ path('admin_product_index', { status: 'rupture' }) }}" class="text-xs font-extrabold text-[var(--accent)]">Gérer →</a>
+        </div>
+        <ul class="divide-y divider">
+            {% for p in lowStock %}
+            <li class="flex items-center gap-3 py-2.5">
+                <span class="w-9 h-9 rounded-lg grid place-items-center text-xs font-black {{ p.isOutOfStock ? 'text-white' : '' }}" style="background:{{ p.isOutOfStock ? 'var(--negative)' : 'var(--accent-soft)' }};color:{{ p.isOutOfStock ? '#fff' : 'var(--accent)' }}">
+                    {% if p.images|length > 0 %}<img src="{{ p|product_image('thumb') }}" class="w-full h-full object-cover rounded-lg" alt="">{% else %}{{ p.name|first|upper }}{% endif %}
+                </span>
+                <a href="{{ path('admin_product_edit', { id: p.id }) }}" class="flex-1 min-w-0 font-bold text-sm hover:text-[var(--accent)] truncate">{{ p.name }}</a>
+                <span class="text-xs font-black px-2.5 py-1 rounded-full {{ p.isOutOfStock ? 'text-white' : 'text-faint' }}" style="background:{{ p.isOutOfStock ? 'var(--negative)' : 'var(--surface-3)' }}">
+                    {{ p.isOutOfStock ? 'Rupture' : p.stock ~ ' restants' }}
+                </span>
+            </li>
+            {% else %}
+            <li class="py-6 text-center text-sm text-soft">Tout est bien approvisionné 🎉</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+{# recent orders #}
+<div class="rounded-3xl surface-card p-6 mt-4 overflow-hidden" data-reveal>
+    <div class="flex items-center justify-between mb-4">
+        <h2 class="font-display font-bold text-xl">Dernières commandes</h2>
+        <a href="{{ path('admin_order_index') }}" class="text-xs font-extrabold text-[var(--accent)]">Toutes les commandes →</a>
+    </div>
+    <div class="overflow-x-auto -mx-2">
+        <table class="w-full text-sm min-w-[560px]">
+            <thead><tr class="border-b divider"><th class="th-cell">N°</th><th class="th-cell">Client</th><th class="th-cell">Articles</th><th class="th-cell text-right">Total</th><th class="th-cell">Statut</th><th class="th-cell text-right">Quand</th><th class="th-cell"></th></tr></thead>
+            <tbody class="divide-y divider">
+                {% for order in recentOrders %}
+                <tr class="hover:bg-surface-2/60 transition-colors">
+                    <td class="td-cell font-black tracking-wide">{{ order.orderNumber }}</td>
+                    <td class="td-cell"><span class="font-bold">{{ order.customerName }}</span><span class="block text-xs text-faint">{{ order.customerEmail }}</span></td>
+                    <td class="td-cell text-faint font-semibold tabular-nums">{{ order.itemCount }} · {{ order.items|length }}</td>
+                    <td class="td-cell text-right font-extrabold tabular-nums">{{ (order.totalAmount * 100)|round|money }}</td>
+                    <td class="td-cell"><span class="px-3 py-1 rounded-full text-[11px] font-black text-white" style="background:{{ order.status.color }}">{{ order.status.label }}</span></td>
+                    <td class="td-cell text-right text-faint font-semibold">{{ order.createdAt|date('d/m H:i') }}</td>
+                    <td class="td-cell text-right"><a href="{{ path('admin_order_show', { id: order.id }) }}" class="text-xs font-extrabold text-[var(--accent)]">Voir →</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

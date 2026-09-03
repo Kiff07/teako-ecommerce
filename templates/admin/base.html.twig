@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token('admin_actions') }}">
+    <title>{% block title %}Admin — Teako{% endblock %} · Teako Admin</title>
+    <meta name="robots" content="noindex,nofollow">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%23d05f3a'/><text x='50' y='72' font-size='62' font-family='Georgia' font-style='italic' fill='white' text-anchor='middle'>T</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,600&family=Nunito+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    {{ encore_entry_link_tags('app') }}
+    {% block stylesheets %}{% endblock %}
+</head>
+<body class="bg-surface text-ink min-h-screen">
+{% set route = app.current_route %}
+<div class="lg:grid lg:grid-cols-[260px_1fr] min-h-screen">
+
+    {# ---- sidebar ---- #}
+    <aside class="hidden lg:flex flex-col sticky top-0 h-screen border-r divider" style="background:var(--surface-2)">
+        <a href="{{ path('home') }}" class="flex items-center gap-2.5 px-6 h-20 border-b divider">
+            <span class="w-10 h-10 rounded-2xl grid place-items-center text-white" style="background:linear-gradient(135deg,var(--gold),var(--accent))">
+                <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 14c1.5-3.2 5-5 8.5-4.3M9.5 13.5c.3-2.4 1.8-4.3 4-5M4 19h16"/><path d="M6.5 11.5c-.3 2 .5 3.6 2.2 4.4 3 1.4 6.3-.2 7.8-3 1.5-2.8 1.1-6-1-8.2"/></svg>
+            </span>
+            <span class="leading-none">
+                <span class="font-display font-bold text-xl block">Teako</span>
+                <span class="text-[8px] font-black tracking-[0.3em] uppercase text-faint">Espace admin</span>
+            </span>
+        </a>
+
+        <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
+            {% set items = [
+                { label: 'Tableau de bord', icon: '📊', route: 'admin_dashboard' },
+                { label: 'Produits', icon: '🥤', route: 'admin_product_index' },
+                { label: 'Catégories', icon: '🗂️', route: 'admin_category_index' },
+                { label: 'Commandes', icon: '🧾', route: 'admin_order_index' },
+            ] %}
+            {% for item in items %}
+            <a href="{{ path(item.route) }}"
+               class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold transition-colors {{ route == item.route ? 'text-white' : 'text-soft hover:bg-surface-3' }}"
+               {% if route == item.route %}style="background:linear-gradient(120deg,var(--gold),var(--accent))"{% endif %}>
+                <span aria-hidden="true">{{ item.icon }}</span> {{ item.label }}
+            </a>
+            {% endfor %}
+
+            <div class="pt-5 mt-5 border-t divider space-y-1">
+                <p class="px-4 text-[10px] font-black uppercase tracking-[0.2em] text-faint">Vitrine</p>
+                <a href="{{ path('home') }}" class="flex items-center gap-3 px-4 py-2 rounded-xl text-sm font-bold text-soft hover:bg-surface-3">🏠 Voir la boutique</a>
+                <a href="{{ path('menu') }}" class="flex items-center gap-3 px-4 py-2 rounded-xl text-sm font-bold text-soft hover:bg-surface-3">📖 La carte en ligne</a>
+            </div>
+        </nav>
+
+        <div class="p-4 border-t divider">
+            <div class="flex items-center gap-3 rounded-2xl p-3 surface-card">
+                <span class="w-10 h-10 rounded-full grid place-items-center font-black text-white" style="background:linear-gradient(135deg,var(--matcha-500,#8aa34e),var(--cocoa-700,#5f4331))">{{ app.user.name|first|upper }}</span>
+                <div class="min-w-0 flex-1">
+                    <p class="text-sm font-extrabold truncate">{{ app.user.name }}</p>
+                    <p class="text-[11px] text-faint truncate">{{ app.user.email }}</p>
+                </div>
+            </div>
+            <form method="post" action="{{ path('admin_logout') }}" class="mt-2">
+                <button type="submit" class="w-full flex items-center justify-center gap-2 rounded-xl py-2 text-sm font-bold text-soft hover:bg-surface-3 transition-colors">↪ Déconnexion</button>
+            </form>
+        </div>
+    </aside>
+
+    {# ---- main column ---- #}
+    <div class="flex flex-col min-w-0">
+        <header class="lg:hidden sticky top-0 z-40 flex items-center justify-between h-16 px-4 border-b divider backdrop-blur-xl bg-surface/90">
+            <a href="{{ path('admin_dashboard') }}" class="flex items-center gap-2 font-display font-bold text-lg">🥤 Teako Admin</a>
+            <div class="flex gap-2 text-xl">
+                <a href="{{ path('home') }}" class="w-10 h-10 grid place-items-center rounded-xl btn-ghost" aria-label="Boutique">🏠</a>
+                <a href="{{ path('admin_product_new') }}" class="btn-accent w-10 h-10 grid place-items-center rounded-xl text-white" aria-label="Nouveau produit">＋</a>
+            </div>
+        </header>
+
+        <main class="flex-1 p-4 sm:p-6 lg:p-10 max-w-[1200px] w-full">
+            {% for type, messages in app.flashes %}
+                {% for message in messages %}
+                <div class="mb-4 rounded-2xl px-5 py-3.5 text-sm font-bold flex items-center gap-3 border" style="background:var(--accent-soft); border-color:var(--accent)">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            {% endfor %}
+            {% block body %}{% endblock %}
+        </main>
+    </div>
+</div>
+
+{{ encore_entry_script_tags('app') }}
+<script>
+    document.addEventListener('click', async (e) => {
+        const trigger = e.target.closest('[data-admin-post]');
+        if (!trigger) return;
+        e.preventDefault();
+        const url = trigger.dataset.adminPost;
+        const msg = trigger.dataset.confirm;
+        if (msg && !window.confirm(msg)) return;
+        try {
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json'
+                }
+            });
+            const body = await res.json().catch(() => ({}));
+            if (!res.ok || body.ok === false) {
+                alert(body.message || 'Une erreur est survenue.');
+                return;
+            }
+            if (trigger.dataset.toast) alert(trigger.dataset.toast);
+            window.location.reload();
+        } catch (err) {
+            alert('Erreur réseau. Réessayez.');
+        }
+    });
+</script>
+{% block javascripts %}{% endblock %}
+</body>
+</html>

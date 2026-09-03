@@ -1,0 +1,17 @@
+{#
+  Reusable "blur-up" picture: a tiny blurred thumbnail fades into the real
+  image once loaded. Params:
+   - url, blur, alt, ratio (e.g. '4 / 3' -> css aspect-ratio), classes,
+     imgClass, loading, extra (extra attributes raw string), eager
+#}
+{% set ratio = ratio|default('') %}
+{% set classes = classes|default('') %}
+{% set imgClass = imgClass|default('') %}
+{% set loading = loading|default('lazy') %}
+<figure class="blur-frame relative overflow-hidden bg-surface-3 {{ classes }}" {% if ratio %}style="aspect-ratio: {{ ratio }}"{% endif %}>
+    {% if blur is defined and blur is not empty %}
+    <img src="{{ blur }}" alt="" aria-hidden="true" class="absolute inset-0 w-full h-full object-cover img-blur scale-110" {% if eager|default(false) %}fetchpriority="high"{% endif %}>
+    {% endif %}
+    <img src="{{ url }}" data-real alt="{{ alt|default('')|e('html_attr') }}" loading="{{ loading }}"
+         class="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-700 {{ imgClass }}" {% if eager|default(false) %}fetchpriority="high"{% endif %} {{ extra|default('')|raw }}>
+</figure>

@@ -1,0 +1,71 @@
+{#
+  Product card used on every store listing.
+  Expects: product (App\Entity\Product). Optional: zoomOnHover (bool).
+#}
+{% set hasImg = product.images|length > 0 %}
+<article class="group relative flex flex-col surface-card rounded-[1.5rem] overflow-hidden transition-transform duration-300 hover:-translate-y-1.5 hover:shadow-[var(--card-shadow-lg)]"
+         data-product-block data-product-id="{{ product.id }}">
+
+    <div class="relative overflow-hidden rounded-t-[1.5rem]">
+        {% if hasImg %}
+            {{ include('components/blur_picture.html.twig', {
+                url: product|product_image('card'),
+                blur: product|product_image('blur'),
+                alt: (product.cover.altText ?? product.name) ~ ' — ' ~ product.name,
+                ratio: '4 / 3',
+                imgClass: 'group-hover:scale-105 transition-transform duration-700 ease-out',
+                eager: eager|default(false)
+            }) }}
+        {% else %}
+            <div class="relative aspect-[4/3] w-full flex items-center justify-center" style="background:linear-gradient(140deg,var(--surface-3),var(--surface-2))">
+                <span class="font-display text-[5.5rem] italic leading-none opacity-40 select-none" aria-hidden="true">{{ product.name|first|upper }}</span>
+                <div class="absolute inset-0 diag-texture"></div>
+            </div>
+        {% endif %}
+
+        {# badge / fav / stock overlays #}
+        {% if product.tag and not product.isOutOfStock %}
+            <span class="absolute top-3 left-3 z-10 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest text-white shadow"
+                  style="background:linear-gradient(120deg,var(--gold),var(--accent))">{{ product.tag }}</span>
+        {% endif %}
+        <div class="absolute top-2.5 right-2.5 z-10">
+            {{ include('components/fav_btn.html.twig', { product: product, style: 'overlay' }) }}
+        </div>
+
+        {% if product.isOutOfStock %}
+            <div class="absolute inset-0 z-10 grid place-items-center bg-[rgba(40,26,16,0.55)] backdrop-blur-[2px]">
+                <span class="px-4 py-2 rounded-full bg-white text-cocoa-900 text-xs font-extrabold uppercase tracking-widest shadow-lg">Rupture de stock</span>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="p-4 sm:p-5 flex flex-col flex-1 gap-1.5">
+        <div class="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.14em] text-faint">
+            <span>{{ product.category.name|default('Teako') }}</span>
+            <span>{{ product.salesCount }} vendus</span>
+        </div>
+        <h3 class="font-display text-[1.15rem] leading-tight">
+            <a href="{{ path('product_show', { slug: product.slug }) }}" class="hover:text-[var(--accent)] transition-colors">{{ product.name }}</a>
+        </h3>
+        <p class="text-[13px] text-soft leading-snug line-clamp-2">{{ product.description }}</p>
+
+        <div class="mt-auto pt-3 flex items-end justify-between gap-3">
+            <div>
+                <span class="font-extrabold text-lg tabular-nums">{{ product.priceCents|money }}</span>
+                {% if not product.isOutOfStock and product.stock <= 5 %}
+                    <span class="block text-[10px] font-bold text-[var(--negative)]">Plus que {{ product.stock }} en stock !</span>
+                {% endif %}
+            </div>
+
+            {% if not product.isOutOfStock %}
+            <button type="button" data-add-to-cart data-product-id="{{ product.id }}" data-restore-label="Ajouter"
+                    class="btn-accent relative inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-bold" aria-label="Ajouter {{ product.name }} au panier">
+                <span data-btn-label>Ajouter</span>
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1.5"/><circle cx="19" cy="21" r="1.5"/><path d="M2.5 3h2l2.4 12.2a1.6 1.6 0 0 0 1.6 1.3h9.4a1.6 1.6 0 0 0 1.6-1.3L21.5 7H6"/></svg>
+            </button>
+            {% else %}
+            <span class="text-xs font-bold text-faint">Indisponible</span>
+            {% endif %}
+        </div>
+    </div>
+</article>

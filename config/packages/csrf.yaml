@@ -1,0 +1,10 @@
+framework:
+    form:
+        csrf_protection:
+            token_id: submit
+
+    csrf_protection:
+        # Login/logout and classic form tokens stay bound to the session for
+        # maximum protection with the classic (non-API) front controller.
+        stateless_token_ids:
+            - submit

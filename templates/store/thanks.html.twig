@@ -1,0 +1,53 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Merci ! — Teako Gourmet Drinks{% endblock %}
+
+{% block body %}
+<section class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 pt-16 pb-24 text-center" data-controller="checkout">
+    <div data-reveal class="anim-scale-in">
+        {% if order %}
+        <div class="relative inline-grid place-items-center mb-8" aria-hidden="true">
+            <svg viewBox="0 0 120 120" class="w-28 h-28">
+                <circle cx="60" cy="60" r="52" fill="none" stroke="var(--positive)" stroke-width="4" class="success-circle" style="stroke-dasharray:326.7;stroke-dashoffset:326.7"/>
+            </svg>
+            <span class="absolute text-5xl">🎉</span>
+        </div>
+        <p class="text-[11px] font-black uppercase tracking-[0.24em]" style="color:var(--positive)">Commande confirmée</p>
+        <h1 class="font-display font-semibold text-5xl sm:text-6xl mt-3">Misaotra, {{ order.customerName|split(' ')|first }} !</h1>
+        <p class="mt-4 text-soft text-lg">Votre commande <strong class="text-ink font-display">{{ order.orderNumber }}</strong> est bien reçue et entre en préparation.</p>
+
+        <div class="mt-8 rounded-[1.8rem] surface-card p-6 text-left text-sm">
+            {% for item in order.items %}
+            <div class="flex items-center justify-between gap-3 py-2 {{ not loop.last ? 'border-b divider' }}">
+                <span class="font-bold">{{ item.quantity }} × {{ item.productName }}</span>
+                <span class="font-extrabold tabular-nums">{{ item.lineTotalCents|money }}</span>
+            </div>
+            {% endfor %}
+            <div class="flex items-center justify-between gap-3 pt-4 mt-2 border-t-2 divider-dashed">
+                <span class="font-black uppercase tracking-widest text-[11px] text-faint">Total à payer</span>
+                <span class="font-display font-bold text-2xl tabular-nums" style="color:var(--accent)">{{ order.totalAmount is not null ? (order.totalAmount * 100)|round|money : 0 }}</span>
+            </div>
+        </div>
+
+        <div class="mt-6 rounded-2xl p-5 text-left flex gap-4 items-start text-sm text-soft" style="background:var(--accent-soft)">
+            <span class="text-2xl" aria-hidden="true">📍</span>
+            <p>
+                <strong class="text-ink">Retrait au bar</strong> — Lot IBF 9 Antsahavola, 6 Rue Elysée Ravelotsalama, Antananarivo.
+                Préparée en 10-15 min. Paiement à la réception (espèces / Mobile Money).
+                {% if order.customerEmail %}<br>Un e-mail de confirmation part vers <strong>{{ order.customerEmail }}</strong>.{% endif %}
+            </p>
+        </div>
+
+        <div class="mt-9 flex flex-wrap justify-center gap-3">
+            <a href="{{ path('menu') }}" class="btn-accent rounded-full px-7 py-3.5 text-sm font-extrabold">Commander encore</a>
+            <a href="{{ path('home') }}" class="btn-ghost rounded-full px-6 py-3.5 text-sm font-bold">Retour à l'accueil</a>
+        </div>
+        {% else %}
+        <p class="text-5xl" aria-hidden="true">🥤</p>
+        <h1 class="font-display text-4xl mt-6">Aucune commande à afficher</h1>
+        <p class="text-soft mt-3">Laissez-nous vous régaler :</p>
+        <a href="{{ path('menu') }}" class="btn-accent inline-flex rounded-full px-7 py-3.5 mt-6 text-sm font-extrabold">Voir la carte</a>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

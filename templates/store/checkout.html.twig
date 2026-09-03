@@ -1,0 +1,112 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Commander — Teako Gourmet Drinks{% endblock %}
+
+{% set total = cart.totalCents %}
+
+{% block body %}
+<section class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 pt-10 lg:pt-16 pb-24" data-controller="checkout">
+    <nav aria-label="Fil d'Ariane" class="text-xs font-bold text-faint mb-6">
+        <a href="{{ path('home') }}" class="hover:text-[var(--accent)]">Accueil</a>
+        <span class="mx-2">/</span>
+        <a href="{{ path('cart_show') }}" class="hover:text-[var(--accent)]">Panier</a>
+        <span class="mx-2">/</span><span>Commande</span>
+    </nav>
+
+    <div data-reveal>
+        <p class="text-[11px] font-black uppercase tracking-[0.24em]" style="color:var(--accent)">Dernière étape</p>
+        <h1 class="font-display font-semibold text-5xl sm:text-6xl mt-2">Valider ma <em class="italic">commande</em></h1>
+    </div>
+
+    {{ form_start(form, { attr: { class: 'mt-10 grid lg:grid-cols-[1fr_380px] gap-10 items-start' } }) }}
+        {{ form_errors(form) }}
+
+        <div class="space-y-7">
+            <section class="rounded-[1.8rem] surface-card p-6 sm:p-8" data-reveal>
+                <h2 class="font-display font-semibold text-2xl flex items-center gap-3"><span class="w-8 h-8 rounded-full text-white grid place-items-center text-sm font-black" style="background:var(--accent)">1</span> Vos coordonnées</h2>
+                <div class="mt-6 grid sm:grid-cols-2 gap-5">
+                    {{ form_row(form.name) }}
+                    {{ form_row(form.email) }}
+                    {{ form_row(form.phone) }}
+                </div>
+            </section>
+
+            <section class="rounded-[1.8rem] surface-card p-6 sm:p-8" data-reveal>
+                <h2 class="font-display font-semibold text-2xl flex items-center gap-3"><span class="w-8 h-8 rounded-full text-white grid place-items-center text-sm font-black" style="background:var(--accent)">2</span> Réception</h2>
+                <div class="mt-6 space-y-5">
+                    {{ form_row(form.deliveryMode) }}
+
+                    <div data-checkout-target="addressField" class="hidden space-y-1">
+                        {{ form_row(form.deliveryAddress) }}
+                        <p class="text-xs text-faint font-semibold">Livraison par coursier Teako — paiement à la réception.</p>
+                    </div>
+
+                    <div data-checkout-target="pickupNote" class="rounded-2xl p-4 text-sm font-semibold text-soft" style="background:var(--accent-soft)">
+                        🥤 Vous passerez simplement nous dire bonjour : <strong>Lot IBF 9 Antsahavola, 6 Rue Elysée Ravelotsalama</strong>. Votre commande sera prête en 10-15 minutes.
+                    </div>
+                </div>
+            </section>
+
+            <section class="rounded-[1.8rem] surface-card p-6 sm:p-8" data-reveal>
+                <h2 class="font-display font-semibold text-2xl flex items-center gap-3"><span class="w-8 h-8 rounded-full text-white grid place-items-center text-sm font-black" style="background:var(--accent)">3</span> Paiement & confirmation</h2>
+                <div class="mt-6 space-y-4">
+                    <div class="rounded-2xl border divider p-4 flex items-center gap-4 text-sm">
+                        <span class="text-2xl" aria-hidden="true">💵</span>
+                        <p class="text-soft"><strong>Paiement à la réception</strong> — espèces ou Mobile Money (MVola, Orange Money, Airtel Money).</p>
+                    </div>
+                    {{ form_row(form.note) }}
+                    <div class="pt-2">
+                        {{ form_row(form.accept) }}
+                    </div>
+                </div>
+            </section>
+
+            <div class="lg:hidden">
+                <button type="submit" class="btn-accent w-full grid place-items-center rounded-full h-14 font-extrabold text-base">Confirmer — {{ total|money }}</button>
+            </div>
+        </div>
+
+        {# ---- recap sticky ---- #}
+        <aside class="lg:sticky lg:top-24 rounded-[1.8rem] p-6 text-white shadow-[var(--card-shadow-lg)]" style="background:linear-gradient(155deg,#37251b,#5f4331)" data-reveal>
+            <h2 class="font-display font-semibold text-2xl flex items-center gap-2">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 7h12l1 13H5L6 7z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>
+                Votre commande
+                <span class="text-white/70 text-sm font-bold">({{ cart.items|length }})</span>
+            </h2>
+            <ul class="mt-5 space-y-4 max-h-[46vh] overflow-y-auto pr-1 no-scrollbar">
+                {% for item in cart.items %}
+                {% set p = item.product %}
+                <li class="flex gap-3 items-center">
+                    <span class="relative shrink-0 w-14 h-14 rounded-xl overflow-hidden bg-black/20">
+                        {% if p.images|length > 0 %}
+                            {{ include('components/blur_picture.html.twig', { url: p|product_image('thumb'), blur: p|product_image('blur'), alt: p.name, ratio: '1 / 1', imgClass: 'rounded-xl' }) }}
+                        {% else %}
+                            <span class="w-full h-full grid place-items-center font-display italic">{{ p.name|first|upper }}</span>
+                        {% endif %}
+                        <span class="absolute -top-1 -right-1 w-5 h-5 grid place-items-center rounded-full text-[10px] font-black bg-white text-[#37251b]">{{ item.quantity }}</span>
+                    </span>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-sm font-bold truncate">{{ p.name }}</p>
+                        <p class="text-white/60 text-xs">{{ p.priceCents|money }}</p>
+                    </div>
+                    <span class="font-extrabold text-sm tabular-nums">{{ item.lineTotalCents|money }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+            <div class="border-t border-white/20 mt-5 pt-4 space-y-1.5 text-sm">
+                <div class="flex justify-between text-white/80"><span>Sous-total</span><span>{{ total|money }}</span></div>
+                <div class="flex justify-between text-white/80"><span>Réception</span><span class="max-w-[10rem] text-right">{{ form.deliveryMode.vars.data == 'delivery' ? 'Livraison' : 'Retrait au bar' }}</span></div>
+            </div>
+            <div class="flex items-end justify-between mt-4 border-t border-white/20 pt-4">
+                <span class="font-bold text-white/85">Total à payer</span>
+                <span class="font-display font-bold text-3xl tabular-nums" data-checkout-total>{{ total|money }}</span>
+            </div>
+            <button type="submit" class="mt-6 w-full hidden lg:grid place-items-center rounded-full py-4 font-extrabold text-sm text-[#37251b] transition-transform hover:scale-[1.02]" style="background:linear-gradient(120deg,#f2c078,#e2a14e)">
+                Confirmer la commande
+            </button>
+            <p class="mt-3 text-center text-[11px] text-white/55 font-semibold">En confirmant, la commande sera préparée immédiatement.</p>
+        </aside>
+
+    {{ form_end(form) }}
+</section>
+{% endblock %}

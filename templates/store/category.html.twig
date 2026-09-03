@@ -1,0 +1,32 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ category.name }} — Teako Gourmet Drinks{% endblock %}
+
+{% block body %}
+<section class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-10 pb-24">
+    <nav aria-label="Fil d'Ariane" class="text-xs font-bold text-faint mb-6">
+        <a href="{{ path('home') }}" class="hover:text-[var(--accent)]">Accueil</a>
+        <span class="mx-2">/</span>
+        <a href="{{ path('menu') }}" class="hover:text-[var(--accent)]">La carte</a>
+        <span class="mx-2">/</span>
+        <span>{{ category.name }}</span>
+    </nav>
+
+    <div class="relative rounded-[2rem] overflow-hidden p-8 sm:p-12 text-white mb-10" style="background:linear-gradient(120deg,#37251b,#7a5a43)" data-reveal>
+        <div class="absolute inset-0 opacity-10" style="background-image:radial-gradient(circle at 80% 20%, #fff 2px, transparent 2px); background-size:26px 26px;"></div>
+        <p class="relative text-[11px] font-black uppercase tracking-[0.24em] opacity-80">Catégorie Teako</p>
+        <h1 class="relative font-display font-semibold text-4xl sm:text-5xl mt-2">{{ category.name }}</h1>
+        {% if category.description %}<p class="relative mt-3 max-w-xl text-white/85">{{ category.description }}</p>{% endif %}
+    </div>
+
+    {% if products is empty %}
+        <p class="text-center text-soft py-16">Aucune création dans cette catégorie pour le moment.</p>
+    {% else %}
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-7" data-stagger-grid>
+        {% for product in products %}
+            {{ include('components/product_card.html.twig', { product: product }) }}
+        {% endfor %}
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

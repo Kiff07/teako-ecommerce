@@ -1,0 +1,52 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Notre histoire — Teako Gourmet Drinks{% endblock %}
+
+{% block body %}
+<section class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-10 lg:pt-16 pb-24">
+    <nav aria-label="Fil d'Ariane" class="text-xs font-bold text-faint mb-6"><a href="{{ path('home') }}" class="hover:text-[var(--accent)]">Accueil</a><span class="mx-2">/</span><span>Notre histoire</span></nav>
+
+    <div class="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+        <div data-reveal>
+            <p class="text-[11px] font-black uppercase tracking-[0.24em]" style="color:var(--accent)">La maison Teako</p>
+            <h1 class="font-display font-semibold text-5xl sm:text-6xl mt-2 text-balance">« Teako sa <em class="italic">Tiako</em> ? »</h1>
+            <p class="mt-6 text-soft leading-relaxed text-lg">En malgache, cette petite phrase dit tout : <em>« Teako, c’est ma préférée »</em>. C’est exactement l’émotion que nous voulons créer dans chaque gobelet.</p>
+            <p class="mt-4 text-soft leading-relaxed">Depuis notre bar d’Antsahavola, à Antananarivo, nous préparons des boissons gourmandes et artisanales : cafés glacés généreux, matchas veloutés, thés épicés qui réchauffent, smoothies et milkshakes fruités. Tout est fait minute, avec des produits frais et l’envie sincère de bien faire.</p>
+
+            <div class="mt-8 grid sm:grid-cols-3 gap-4 text-center">
+                <div class="rounded-2xl surface-card p-5"><p class="font-display text-3xl font-bold" style="color:var(--accent)">20+</p><p class="text-[11px] font-black uppercase tracking-widest text-faint mt-1">Créations</p></div>
+                <div class="rounded-2xl surface-card p-5"><p class="font-display text-3xl font-bold" style="color:var(--accent)">100%</p><p class="text-[11px] font-black uppercase tracking-widest text-faint mt-1">Maison</p></div>
+                <div class="rounded-2xl surface-card p-5"><p class="font-display text-3xl font-bold" style="color:var(--accent)">15'</p><p class="text-[11px] font-black uppercase tracking-widest text-faint mt-1">max</p></div>
+            </div>
+        </div>
+        <div class="relative" data-reveal>
+            <div class="rounded-[2rem] overflow-hidden shadow-[var(--card-shadow-lg)] aspect-[4/5]">
+                <img src="{{ asset('img/brand-photo.jpg') }}" alt="Le bar Teako" loading="lazy" class="w-full h-full object-cover">
+            </div>
+            <div class="absolute -bottom-6 -left-4 sm:-left-8 rounded-2xl px-6 py-4 text-white shadow-xl floaty" style="background:linear-gradient(135deg,var(--gold),var(--accent)); animation-duration:6s">
+                <p class="font-display italic font-semibold text-lg leading-tight">« Goûte et<br>deviens accro ! »</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-24 grid lg:grid-cols-3 gap-6" data-stagger-grid>
+        {% for step in [
+            { n: '01', t: 'Des produits frais', d: 'Fruits, laits et crèmes sélectionnés chaque matin sur les marchés d’Antananarivo.', e: '🍓' },
+            { n: '02', t: 'Un savoir-faire barista', d: 'Recettes maison, dosages précis, textures soignées — comme au meilleur café de spécialité.', e: '☕' },
+            { n: '03', t: 'Une signature malgache', d: 'Vanille bourbon, combava, miel local : notre terroir dans chaque création.', e: '🇲🇬' },
+        ] %}
+        <article class="rounded-[1.8rem] surface-card p-7 relative overflow-hidden group hover:-translate-y-1 transition-transform duration-300">
+            <span class="font-display italic text-7xl text-faint/25 absolute -top-3 right-4 select-none">{{ step.n }}</span>
+            <p class="text-3xl">{{ step.e }}</p>
+            <h2 class="font-display font-semibold text-2xl mt-3">{{ step.t }}</h2>
+            <p class="mt-2 text-sm text-soft leading-relaxed">{{ step.d }}</p>
+        </article>
+        {% endfor %}
+    </div>
+
+    <div class="mt-20 text-center" data-reveal>
+        <img src="{{ asset('img/brand-menu.jpg') }}" alt="La carte Teako" loading="lazy" class="rounded-[2rem] shadow-[var(--card-shadow-lg)] max-h-[70vh] w-auto mx-auto object-contain">
+        <a href="{{ path('menu') }}" class="btn-accent inline-flex rounded-full px-8 py-4 mt-8 text-sm font-extrabold">Commander maintenant</a>
+    </div>
+</section>
+{% endblock %}

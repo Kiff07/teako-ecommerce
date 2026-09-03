@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#fdfaf4">
+    <meta name="csrf-token" content="{{ csrf_token('cart') }}">
+    <title>{% block title %}Teako — Gourmet Drinks{% endblock %}</title>
+    <meta name="description" content="{% block metaDescription %}Teako Gourmet Drinks — cafés, matchas, smoothies et milkshakes artisanaux à Antananarivo. Goûte et deviens accro !{% endblock %}">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%23d05f3a'/><text x='50' y='72' font-size='62' font-family='Georgia' font-style='italic' fill='white' text-anchor='middle'>T</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,600&family=Nunito+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    {{ encore_entry_link_tags('app') }}
+    <style>
+        /* show correct icon before JS runs */
+        html[data-theme='dark'] .theme-btn .sun, html[data-theme='light'] .theme-btn .moon { display: none; }
+    </style>
+    {% block stylesheets %}{% endblock %}
+</head>
+<body class="bg-surface text-ink min-h-screen flex flex-col" data-controller="cart">
+<div id="scroll-progress"></div>
+
+{% block bodyTop %}{% endblock %}
+
+{# ---- cart drawer ---- #}
+<div data-cart-target="drawerBackdrop" data-cart-backdrop class="overlay hidden opacity-0 transition-opacity" style="animation:none"></div>
+<aside data-cart-target="drawer" class="drawer" aria-label="Panier" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-between px-5 py-4 border-b divider">
+        <h2 class="font-display text-xl flex items-center gap-2">
+            <svg class="w-5 h-5 text-[var(--accent)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 7h12l1 13H5L6 7z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>
+            Votre panier
+            <span class="text-sm font-body font-bold text-faint" data-cart-target="drawerCount">0</span>
+        </h2>
+        <button data-close-cart aria-label="Fermer" class="w-9 h-9 grid place-items-center rounded-full btn-ghost">✕</button>
+    </div>
+
+    <div data-cart-target="drawerLines" class="flex-1 overflow-y-auto px-5"></div>
+
+    <div data-cart-target="drawerEmpty" class="flex-1 hidden flex-col items-center justify-center gap-3 px-8 text-center">
+        <div class="w-24 h-24 rounded-full grid place-items-center bg-surface-3 text-4xl" aria-hidden="true">🥤</div>
+        <p class="font-display text-lg">Votre panier est vide</p>
+        <p class="text-sm text-soft">Ajoutez une gourmandise glacée ou un café fumant…</p>
+        <a href="{{ path('menu') }}" data-close-cart class="btn-accent mt-2 inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold">Voir la carte</a>
+    </div>
+
+    <div data-cart-target="drawerFooter" class="border-t divider px-5 py-4 space-y-3 bg-surface-2/70">
+        <div class="flex items-center justify-between text-sm">
+            <span class="text-soft font-semibold">Sous-total</span>
+            <span class="font-extrabold text-xl tabular-nums" data-cart-target="drawerTotal">0 Ar</span>
+        </div>
+        <p class="text-[11px] text-faint leading-snug">Retrait au bar gratuit · Livraison Antananarivo selon la zone.</p>
+        <div class="flex gap-2">
+            <a href="{{ path('cart_show') }}" data-close-cart class="btn-ghost flex-1 grid place-items-center rounded-full py-2.5 text-sm font-bold">Voir le panier</a>
+            <a href="{{ path('order_checkout') }}" data-close-cart class="btn-accent flex-[1.4] grid place-items-center rounded-full py-2.5 text-sm font-bold">Commander</a>
+        </div>
+    </div>
+</aside>
+
+{# ---- announcement bar ---- #}
+<div class="relative text-center text-[11px] sm:text-xs font-bold tracking-[0.12em] uppercase px-4 py-2 text-cream-100" style="background:linear-gradient(90deg,#37251b,#5f4331,#37251b)">
+    <span class="opacity-90">Teako Gourmet Drinks · Retrait au bar — Lot IBF 9 Antsahavola · Livraison Antananarivo</span>
+</div>
+
+{# ---- header ---- #}
+<header class="sticky top-0 z-50 backdrop-blur-xl bg-surface/85 border-b divider">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16 gap-3" data-controller="menu">
+            {# burger #}
+            <button type="button" class="lg:hidden w-10 h-10 -ml-2 grid place-items-center rounded-xl btn-ghost" data-action="menu#toggle" aria-label="Ouvrir le menu">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+            </button>
+
+            {# logo #}
+            <a href="{{ path('home') }}" class="flex items-center gap-2.5 shrink-0" aria-label="Teako — retour à l'accueil">
+                <span class="relative w-10 h-10 rounded-2xl grid place-items-center text-white shadow-md" style="background:linear-gradient(135deg,var(--gold),var(--accent))">
+                    <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 14c1.5-3.2 5-5 8.5-4.3M9.5 13.5c.3-2.4 1.8-4.3 4-5M4 19h16"/><path d="M6.5 11.5c-.3 2 .5 3.6 2.2 4.4 3 1.4 6.3-.2 7.8-3 1.5-2.8 1.1-6-1-8.2"/></svg>
+                </span>
+                <span class="leading-none">
+                    <span class="block font-display font-bold text-[1.35rem] tracking-tight">Teako</span>
+                    <span class="block text-[8px] font-black tracking-[0.32em] uppercase text-[var(--ink-faint)]">Gourmet Drinks</span>
+                </span>
+            </a>
+
+            {# desktop nav #}
+            <nav class="hidden lg:flex items-center gap-7 text-sm font-bold" aria-label="Navigation principale">
+                <a href="{{ path('home') }}" class="nav-link {{ app.current_route == 'home' ? 'active text-[var(--accent)]' : 'hover:text-[var(--accent)] transition-colors' }}">Accueil</a>
+                <a href="{{ path('menu') }}" class="nav-link {{ app.current_route in ['menu','product_show','category_show'] ? 'active text-[var(--accent)]' : 'hover:text-[var(--accent)] transition-colors' }}">La carte</a>
+                <a href="{{ path('discover') }}" class="nav-link {{ app.current_route == 'discover' ? 'active text-[var(--accent)]' : 'hover:text-[var(--accent)] transition-colors' }}">Nos best-sellers</a>
+                <a href="{{ path('about') }}" class="nav-link {{ app.current_route == 'about' ? 'active text-[var(--accent)]' : 'hover:text-[var(--accent)] transition-colors' }}">Notre histoire</a>
+                <a href="{{ path('contact') }}" class="nav-link {{ app.current_route == 'contact' ? 'active text-[var(--accent)]' : 'hover:text-[var(--accent)] transition-colors' }}">Contact</a>
+            </nav>
+
+            {# actions #}
+            <div class="flex items-center gap-1 sm:gap-1.5 ml-auto">
+                <a href="{{ path('fav_list') }}" class="relative w-10 h-10 grid place-items-center rounded-xl text-soft hover:bg-surface-2 transition-colors" aria-label="Mes favoris">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 20.6S4 15.7 2.4 11.7C1 8.2 3 4.9 6.3 4.6c2-.2 3.8.9 4.7 2.5h2c.9-1.6 2.7-2.7 4.7-2.5 3.3.3 5.3 3.6 3.9 7.1C20 15.7 12 20.6 12 20.6z"/></svg>
+                    <span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-[var(--negative)]"></span>
+                </a>
+                <div data-controller="theme" class="w-10 h-10">
+                    <button type="button" data-theme-target="button" data-action="theme#toggle" class="theme-btn w-10 h-10 grid place-items-center rounded-xl text-soft hover:bg-surface-2 transition-colors" aria-label="Basculer le thème">
+                        <svg class="moon w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.6 14.2A8.5 8.5 0 0 1 9.8 3.4a8.5 8.5 0 1 0 10.8 10.8z"/></svg>
+                        <svg class="sun w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M4.9 4.9l1.7 1.7M17.4 17.4l1.7 1.7M4.9 19.1l1.7-1.7M17.4 6.6l1.7-1.7"/></svg>
+                    </button>
+                </div>
+                <div class="w-10 h-10">
+                    <button type="button" data-open-cart data-cart-target="badgeWrap" class="hidden relative w-10 h-10 grid place-items-center rounded-xl text-soft hover:bg-surface-2 transition-colors" aria-label="Ouvrir le panier">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M6 7h12l1.2 13.2a1.5 1.5 0 0 1-1.5 1.6H6.3a1.5 1.5 0 0 1-1.5-1.6L6 7z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg>
+                        <span data-cart-target="badgeCount" class="absolute -top-1 -right-1 min-w-[19px] h-[19px] px-1 grid place-items-center rounded-full text-[10px] font-black text-white" style="background:var(--accent)">0</span>
+                    </button>
+                </div>
+            </div>
+
+            {# mobile menu panel #}
+            <div data-menu-target="backdrop" class="fixed inset-0 z-50 bg-black/40 hidden lg:hidden" data-action="click->menu#close"></div>
+            <div data-menu-target="panel" class="fixed top-0 left-0 bottom-0 z-50 w-[86vw] max-w-xs bg-surface border-r divider -translate-x-full transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] flex flex-col lg:hidden">
+                <div class="flex items-center justify-between px-5 py-4 border-b divider">
+                    <span class="font-display font-bold text-lg">Menu</span>
+                    <button type="button" class="w-9 h-9 grid place-items-center rounded-full btn-ghost" data-action="menu#close" aria-label="Fermer">✕</button>
+                </div>
+                <nav class="flex-1 overflow-y-auto px-4 py-3 space-y-1 text-[15px] font-bold">
+                    <a href="{{ path('home') }}" data-action="menu#close" class="block px-3 py-2.5 rounded-xl hover:bg-surface-2">Accueil</a>
+                    <a href="{{ path('menu') }}" data-action="menu#close" class="block px-3 py-2.5 rounded-xl hover:bg-surface-2">La carte</a>
+                    <a href="{{ path('discover') }}" data-action="menu#close" class="block px-3 py-2.5 rounded-xl hover:bg-surface-2">Nos best-sellers</a>
+                    <a href="{{ path('about') }}" data-action="menu#close" class="block px-3 py-2.5 rounded-xl hover:bg-surface-2">Notre histoire</a>
+                    <a href="{{ path('contact') }}" data-action="menu#close" class="block px-3 py-2.5 rounded-xl hover:bg-surface-2">Contact</a>
+                    <div class="pt-3 mt-3 border-t divider space-y-2">
+                        <p class="px-3 text-[10px] font-black uppercase tracking-[0.2em] text-faint">Catégories</p>
+                        {% for cat in store_categories() %}
+                            {% if cat.products|length > 0 %}
+                            <a href="{{ path('category_show', { slug: cat.slug }) }}" data-action="menu#close" class="block px-3 py-2 rounded-xl text-sm font-bold text-soft hover:bg-surface-2">{{ cat.name }}</a>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </nav>
+                <div class="px-5 py-4 border-t divider text-[11px] text-faint leading-relaxed">
+                    Lot IBF 9 Antsahavola · Antananarivo<br>Goûte et deviens accro !
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main class="flex-1">
+    {% block body %}{% endblock %}
+</main>
+
+{# ---- footer ---- #}
+<footer class="mt-20 border-t divider" style="background:var(--surface-2)">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-14 grid gap-10 md:grid-cols-2 lg:grid-cols-4">
+        <div class="space-y-4">
+            <a href="{{ path('home') }}" class="flex items-center gap-2.5">
+                <span class="w-9 h-9 rounded-xl grid place-items-center text-white" style="background:linear-gradient(135deg,var(--gold),var(--accent))">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 14c1.5-3.2 5-5 8.5-4.3M9.5 13.5c.3-2.4 1.8-4.3 4-5M4 19h16"/><path d="M6.5 11.5c-.3 2 .5 3.6 2.2 4.4 3 1.4 6.3-.2 7.8-3 1.5-2.8 1.1-6-1-8.2"/></svg>
+                </span>
+                <span class="leading-none">
+                    <span class="font-display font-bold text-xl block">Teako</span>
+                    <span class="text-[8px] font-black tracking-[0.3em] uppercase text-faint">Gourmet Drinks</span>
+                </span>
+            </a>
+            <p class="text-sm text-soft leading-relaxed">Cafés de spécialité, thés, matchas, smoothies &amp; milkshakes artisanaux préparés avec amour à Antananarivo.</p>
+            <p class="text-sm italic font-display text-[var(--accent)]">« Goûte et deviens accro ! »</p>
+        </div>
+
+        <div>
+            <h4 class="font-black text-[11px] uppercase tracking-[0.18em] text-faint mb-4">Navigation</h4>
+            <ul class="space-y-2.5 text-sm font-semibold text-soft">
+                <li><a href="{{ path('home') }}" class="hover:text-[var(--accent)] transition-colors">Accueil</a></li>
+                <li><a href="{{ path('menu') }}" class="hover:text-[var(--accent)] transition-colors">La carte</a></li>
+                <li><a href="{{ path('discover') }}" class="hover:text-[var(--accent)] transition-colors">Best-sellers</a></li>
+                <li><a href="{{ path('about') }}" class="hover:text-[var(--accent)] transition-colors">Notre histoire</a></li>
+                <li><a href="{{ path('contact') }}" class="hover:text-[var(--accent)] transition-colors">Contact</a></li>
+                <li><a href="{{ path('cart_show') }}" class="hover:text-[var(--accent)] transition-colors">Mon panier</a></li>
+            </ul>
+        </div>
+
+        <div>
+            <h4 class="font-black text-[11px] uppercase tracking-[0.18em] text-faint mb-4">Catégories</h4>
+            <ul class="space-y-2.5 text-sm font-semibold text-soft">
+                {% for cat in store_categories() %}
+                <li><a href="{{ path('category_show', { slug: cat.slug }) }}" class="hover:text-[var(--accent)] transition-colors">{{ cat.name }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div>
+            <h4 class="font-black text-[11px] uppercase tracking-[0.18em] text-faint mb-4">Nous trouver</h4>
+            <address class="not-italic text-sm text-soft space-y-2.5">
+                <p class="flex gap-2"><span aria-hidden="true">📍</span> Lot IBF 9 Antsahavola<br>6 Rue Elysée Ravelotsalama, Antananarivo</p>
+                <p class="flex gap-2"><span aria-hidden="true">📞</span> +261 34 00 000 00</p>
+                <p class="flex gap-2"><span aria-hidden="true">✉️</span> hello@teako.mg</p>
+            </address>
+            <div class="flex gap-2 mt-4">
+                {% for icon,label in {'f':'Facebook','i':'Instagram','t':'TikTok'} %}
+                <a href="#" class="w-9 h-9 grid place-items-center rounded-full btn-ghost text-xs font-black" aria-label="{{ label }}">{{ icon|upper }}</a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="border-t divider">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-faint">
+            <span>© <span data-year>2025</span> Teako Gourmet Drinks · Antananarivo, Madagascar</span>
+            <span class="flex items-center gap-1.5">Conçu avec <span class="text-[var(--accent)]">♥</span> et beaucoup de crème</span>
+        </div>
+    </div>
+</footer>
+
+{{ encore_entry_script_tags('app') }}
+<script>window.TEAKO_ROUTES = { add: '/panier/ajouter/', cart: '/panier/etat' };</script>
+{% block javascripts %}{% endblock %}
+</body>
+</html>

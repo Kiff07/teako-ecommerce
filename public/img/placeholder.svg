@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="640" viewBox="0 0 900 640">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f3e6cd"/>
+      <stop offset="0.55" stop-color="#ead3ae"/>
+      <stop offset="1" stop-color="#dfb98c"/>
+    </linearGradient>
+  </defs>
+  <rect width="900" height="640" fill="url(#g)"/>
+  <g transform="translate(450 290)">
+    <text x="0" y="0" text-anchor="middle" font-family="Georgia, serif" font-size="150" font-style="italic" fill="#7a5a43" opacity="0.85">T</text>
+    <text x="0" y="76" text-anchor="middle" font-family="Georgia, serif" font-size="40" letter-spacing="8" fill="#5f4331" opacity="0.9">TEAKO</text>
+    <text x="0" y="112" text-anchor="middle" font-family="sans-serif" font-size="18" letter-spacing="4" fill="#8a6a52">GOURMET DRINKS</text>
+  </g>
+</svg>

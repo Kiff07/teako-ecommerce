@@ -1,0 +1,32 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes favoris — Teako Gourmet Drinks{% endblock %}
+
+{% block body %}
+<section class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-10 lg:pt-16 pb-24" data-cart-page>
+    <nav aria-label="Fil d'Ariane" class="text-xs font-bold text-faint mb-6">
+        <a href="{{ path('home') }}" class="hover:text-[var(--accent)]">Accueil</a>
+        <span class="mx-2">/</span><span>Mes favoris</span>
+    </nav>
+
+    <div data-reveal>
+        <p class="text-[11px] font-black uppercase tracking-[0.24em]" style="color:var(--accent)">Votre sélection ♥</p>
+        <h1 class="font-display font-semibold text-5xl sm:text-6xl mt-2">Mes <em class="italic">favoris</em></h1>
+    </div>
+
+    {% if products is not empty %}
+    <div class="mt-10 grid sm:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-7" data-stagger-grid data-fav-grid>
+        {% for product in products %}
+        <div data-fav-card>{{ include('components/product_card.html.twig', { product: product }) }}</div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="mt-14 text-center py-20 rounded-[2rem] surface-card" data-reveal>
+        <p class="text-5xl" aria-hidden="true">💛</p>
+        <h2 class="font-display text-3xl mt-5">Aucun favori pour l'instant</h2>
+        <p class="text-soft mt-2 max-w-md mx-auto">Cliquez sur le petit cœur d'un produit pour le retrouver ici instantanément.</p>
+        <a href="{{ path('menu') }}" class="btn-accent inline-flex rounded-full px-6 py-3 mt-6 text-sm font-extrabold">Explorer la carte</a>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}La carte — Teako Gourmet Drinks{% endblock %}
+
+{% block body %}
+{% set hasContent = (groups|length + (uncategorized|default([])|length)) > 0 %}
+<section class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-10 lg:pt-16 pb-24">
+    <nav aria-label="Fil d'Ariane" class="text-xs font-bold text-faint mb-6">
+        <a href="{{ path('home') }}" class="hover:text-[var(--accent)] transition-colors">Accueil</a>
+        <span class="mx-2">/</span><span>La carte</span>
+    </nav>
+
+    <div data-reveal>
+        <p class="text-[11px] font-black uppercase tracking-[0.24em]" style="color:var(--accent)">Menu Teako</p>
+        <h1 class="font-display font-semibold text-5xl sm:text-6xl mt-2 text-balance">La carte des <em class="italic">gourmandises</em></h1>
+        <p class="mt-4 max-w-2xl text-soft text-lg">Commandez en ligne : on prépare et vous retirez au bar d'Antsahavola — ou faites-vous livrer à Antananarivo.</p>
+    </div>
+
+    {% if groups|length > 1 %}
+    <div class="sticky top-16 z-30 -mx-4 px-4 py-3 backdrop-blur-lg bg-surface/90 border-b divider mt-8 flex gap-2 overflow-x-auto no-scrollbar" data-reveal>
+        {% for g in groups %}
+            <a href="#cat-{{ g.category.id }}" class="shrink-0 rounded-full px-4 py-2 text-xs font-extrabold surface-card hover:text-white transition-colors hover:!bg-[var(--accent)]">{{ g.category.name }}</a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% for g in groups %}
+    <section class="mt-14" id="cat-{{ g.category.id }}">
+        <div class="flex items-end justify-between gap-4 border-b divider pb-4" data-reveal>
+            <div>
+                <h2 class="font-display font-semibold text-3xl sm:text-4xl">{{ g.category.name }}</h2>
+                {% if g.category.description %}<p class="text-sm text-soft mt-1.5 max-w-2xl">{{ g.category.description }}</p>{% endif %}
+            </div>
+            <span class="shrink-0 text-sm font-extrabold text-faint">{{ g.items|length }} créations</span>
+        </div>
+        <div class="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 lg:gap-6" data-stagger-grid>
+            {% for product in g.items %}
+                {{ include('components/product_card.html.twig', { product: product }) }}
+            {% endfor %}
+        </div>
+    </section>
+    {% endfor %}
+
+    {% if uncategorized|default([])|length > 0 %}
+    <section class="mt-14">
+        <h2 class="font-display font-semibold text-3xl border-b divider pb-4" data-reveal>Et plus encore</h2>
+        <div class="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6" data-stagger-grid>
+            {% for product in uncategorized %}
+                {{ include('components/product_card.html.twig', { product: product }) }}
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    {% if not hasContent %}
+    <div class="text-center py-24" data-reveal>
+        <p class="text-5xl" aria-hidden="true">☕</p>
+        <h2 class="font-display text-3xl mt-4">La carte arrive très bientôt…</h2>
+        <p class="text-soft mt-2">Revenez dans quelques instants.</p>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

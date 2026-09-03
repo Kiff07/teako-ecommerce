@@ -1,0 +1,100 @@
+{% extends 'admin/base.html.twig' %}
+{% set statusFlow = ['pending', 'paid', 'shipped', 'delivered', 'cancelled'] %}
+{% block title %}Commande {{ order.orderNumber }}{% endblock %}
+
+{% block body %}
+<a href="{{ path('admin_order_index') }}" class="text-xs font-extrabold text-faint hover:text-[var(--accent)]">← Toutes les commandes</a>
+<div class="flex flex-wrap items-center justify-between gap-4 mt-1 mb-7">
+    <div>
+        <h1 class="font-display font-bold text-3xl">{{ order.orderNumber }}</h1>
+        <p class="text-sm text-soft mt-1">Passée le {{ order.createdAt|date('d/m/Y à H:i') }}</p>
+    </div>
+    <label class="flex items-center gap-3 rounded-2xl surface-card px-4 py-3">
+        <span class="text-xs font-black uppercase tracking-widest text-faint">Changer le statut</span>
+        <select data-order-status data-url="{{ path('admin_order_status', { id: order.id }) }}" class="field-input !w-auto !py-2 font-extrabold" style="color:{{ order.status.color }}">
+            {% for s in statuses %}
+            <option value="{{ s.value }}" {{ order.status == s ? 'selected' : '' }}>{{ s.label }}</option>
+            {% endfor %}
+        </select>
+    </label>
+</div>
+
+<div class="grid lg:grid-cols-3 gap-5 items-start">
+    <div class="lg:col-span-2 rounded-3xl surface-card p-6 space-y-4">
+        <h2 class="font-display font-bold text-xl">Articles commandés</h2>
+        {% for item in order.items %}
+        {% set p = item.product %}
+        <div class="flex items-center gap-4 py-3 {{ not loop.last ? 'border-b divider' }}">
+            <span class="shrink-0 w-14 h-14 rounded-xl overflow-hidden bg-surface-3 grid place-items-center font-display italic text-faint">
+                {% if p and p.images|length > 0 %}<img src="{{ p|product_image('thumb') }}" class="w-full h-full object-cover" alt="">{% else %}{{ item.productName|first|upper }}{% endif %}
+            </span>
+            <div class="min-w-0 flex-1">
+                <p class="font-bold">{{ item.productName }}</p>
+                <p class="text-xs text-faint">Réf. produit : {{ p ? '#' ~ p.id ~ ' · /' ~ p.slug : 'produit supprimé' }}</p>
+            </div>
+            <div class="text-right shrink-0">
+                <p class="text-sm text-faint font-semibold">{{ item.quantity }} × {{ (item.unitPrice * 100)|round|money }}</p>
+                <p class="font-extrabold tabular-nums">{{ item.lineTotalCents|money }}</p>
+            </div>
+        </div>
+        {% endfor %}
+
+        <div class="flex items-end justify-between border-t-2 divider pt-4">
+            <span class="font-black uppercase tracking-widest text-[11px] text-faint">Total de la commande</span>
+            <span class="font-display font-bold text-3xl tabular-nums" style="color:var(--accent)">{{ (order.totalAmount * 100)|round|money }}</span>
+        </div>
+    </div>
+
+    <aside class="space-y-4">
+        <div class="rounded-3xl surface-card p-6">
+            <h2 class="font-display font-bold text-lg mb-3">Client</h2>
+            <dl class="space-y-2 text-sm">
+                <div class="flex justify-between gap-3"><dt class="text-faint font-bold">Nom</dt><dd class="font-bold text-right">{{ order.customerName }}</dd></div>
+                <div class="flex justify-between gap-3"><dt class="text-faint font-bold">E-mail</dt><dd class="text-right break-all">{{ order.customerEmail }}</dd></div>
+                {% if order.customerPhone %}<div class="flex justify-between gap-3"><dt class="text-faint font-bold">Tél.</dt><dd>{{ order.customerPhone }}</dd></div>{% endif %}
+            </dl>
+        </div>
+
+        <div class="rounded-3xl surface-card p-6">
+            <h2 class="font-display font-bold text-lg mb-3">Réception</h2>
+            {% if order.deliveryAddress %}
+                <p class="text-sm text-soft">🛵 Livraison :<br><strong>{{ order.deliveryAddress }}</strong></p>
+            {% else %}
+                <p class="text-sm text-soft">🚶 Retrait au bar — Antsahavola</p>
+            {% endif %}
+        </div>
+
+        <div class="rounded-3xl surface-card p-6">
+            <h2 class="font-display font-bold text-lg mb-3">Suivi</h2>
+            <div class="flex flex-wrap gap-1.5">
+                {% for code in statusFlow %}
+                {% set activeIdx = statusFlow|filter(s => s == order.status.value)|first %}
+                <span class="px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider {{ loop.index0 <= statusFlow|length ? '' : '' }} {{ code == order.status.value ? 'text-white' : 'text-faint bg-surface-3' }}" {{ code == order.status.value ? 'style=background:var(--accent)' : '' }}>{{ code }}</span>
+                {% endfor %}
+            </div>
+            <p class="text-xs text-faint mt-3">💡 Pensez à contacter le client si le statut change (payée → expédiée…).</p>
+        </div>
+    </aside>
+</div>
+
+<script>
+    document.querySelector('[data-order-status]')?.addEventListener('change', async (e) => {
+        const select = e.currentTarget;
+        const csrf = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        select.disabled = true;
+        try {
+            const res = await fetch(select.dataset.url, {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: select.value })
+            });
+            const body = await res.json();
+            if (!res.ok || !body.ok) { alert(body.message || 'Erreur'); select.value = select.dataset.prev; }
+            select.disabled = false;
+        } catch (err) {
+            alert('Erreur réseau.');
+            select.disabled = false;
+        }
+    });
+</script>
+{% endblock %}

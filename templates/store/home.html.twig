@@ -1,0 +1,222 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Teako — Gourmet Drinks · Cafés & créations glacées à Antananarivo{% endblock %}
+
+{% block body %}
+{% if hero %}
+{# ============ HERO ============ #}
+<section class="relative overflow-hidden">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 lg:py-14 grid lg:grid-cols-[1.05fr_1fr] gap-8 lg:gap-12 items-center min-h-[88vh]">
+        <div class="relative z-10 order-2 lg:order-1 pt-2">
+            <p class="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.22em] surface-card" data-reveal>
+                <span class="w-2 h-2 rounded-full" style="background:var(--accent)"></span> Antananarivo · Madagascar
+            </p>
+            <h1 class="font-display font-semibold text-balance mt-5 text-5xl sm:text-6xl lg:text-[4.4rem] leading-[1.02]" data-reveal>
+                Goûte et<br>
+                <em class="italic" style="color:var(--accent)">deviens accro</em>
+                <span class="block mt-3 text-2xl sm:text-3xl text-soft font-normal">— c’est promis, c’est Teako.</span>
+            </h1>
+            <p class="mt-5 max-w-xl text-soft text-lg leading-relaxed" data-reveal>
+                Cafés de spécialité, matchas veloutés, thés épicés et créations glacées préparés minute,
+                avec des fruits frais et des recettes gourmandes signées <strong class="text-ink">Teako Gourmet Drinks</strong>.
+            </p>
+
+            <div class="mt-8 flex flex-wrap items-center gap-3" data-reveal>
+                <a href="{{ path('product_show', { slug: hero.slug }) }}" class="btn-accent inline-flex items-center gap-2.5 rounded-full px-7 py-4 text-base font-extrabold">
+                    Commander le best-seller
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </a>
+                <a href="{{ path('menu') }}" class="btn-ghost inline-flex items-center gap-2 rounded-full px-6 py-4 text-sm font-bold">Voir toute la carte</a>
+            </div>
+
+            <dl class="mt-10 grid grid-cols-3 max-w-md gap-4" data-reveal>
+                <div><dt class="font-display text-2xl font-bold" style="color:var(--accent)">100%</dt><dd class="text-[11px] font-bold uppercase tracking-widest text-faint">Fait maison</dd></div>
+                <div><dt class="font-display text-2xl font-bold" style="color:var(--accent)">20+</dt><dd class="text-[11px] font-bold uppercase tracking-widest text-faint">Créations au menu</dd></div>
+                <div><dt class="font-display text-2xl font-bold" style="color:var(--accent)">15'</dt><dd class="text-[11px] font-bold uppercase tracking-widest text-faint">Préparées minute</dd></div>
+            </dl>
+        </div>
+
+        <div class="relative order-1 lg:order-2" data-reveal>
+            <div class="relative rounded-[2.2rem] overflow-hidden shadow-[var(--card-shadow-lg)] ring-1 ring-white/20 aspect-[4/5] max-h-[78vh] w-full">
+                <div class="blur-frame absolute inset-0">
+                    <img src="{{ hero|product_image('blur') }}" alt="" aria-hidden="true" class="absolute inset-0 w-full h-full object-cover img-blur scale-110">
+                    <img src="{{ hero|product_image('big') }}" data-real alt="{{ hero.name }}" fetchpriority="high"
+                         class="kenburns absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-700">
+                </div>
+                <div class="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent"></div>
+
+                <div class="absolute bottom-4 inset-x-4 rounded-2xl p-4 text-white backdrop-blur-md flex items-center gap-3 bg-white/15 ring-1 ring-white/25">
+                    <span class="shrink-0 w-11 h-11 rounded-xl grid place-items-center text-lg" style="background:rgba(255,255,255,0.2)">🥤</span>
+                    <div class="min-w-0">
+                        <p class="text-[10px] font-black uppercase tracking-[0.2em] opacity-80">Aujourd'hui sur la carte</p>
+                        <p class="font-display font-semibold truncate">{{ hero.name }}</p>
+                    </div>
+                    <div class="ml-auto text-right shrink-0">
+                        <p class="font-extrabold text-lg leading-none">{{ hero.priceCents|money }}</p>
+                        <p class="text-[10px] opacity-80 font-bold">dès maintenant</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="absolute -top-5 -right-3 lg:-right-6 w-20 h-20 sm:w-24 sm:h-24 rounded-full grid place-items-center text-3xl sm:text-4xl shadow-xl ring-4 ring-[var(--surface)] floaty" style="background:linear-gradient(135deg,var(--gold),var(--accent)); animation: floaty 5s ease-in-out infinite">🥤</div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{# marquee divider #}
+<div class="border-y divider py-3 overflow-hidden bg-surface-2/60" aria-hidden="true">
+    <div class="marquee-track font-display italic text-lg text-soft">
+        {% for word in ['Passion Combava Vanille','Iced Caramel Macchiato','Fluffy Oreo','Matcha Latte Velvet','Cocoa Banana','Thé Orange Épicé','Smoothie Fruits Rouges','Cappuccino Teako'] %}
+            <span class="whitespace-nowrap">{{ word }}</span>
+            <span class="text-[var(--accent)]">✦</span>
+        {% endfor %}
+        {% for word in ['Passion Combava Vanille','Iced Caramel Macchiato','Fluffy Oreo','Matcha Latte Velvet','Cocoa Banana','Thé Orange Épicé','Smoothie Fruits Rouges','Cappuccino Teako'] %}
+            <span class="whitespace-nowrap">{{ word }}</span>
+            <span class="text-[var(--accent)]">✦</span>
+        {% endfor %}
+    </div>
+</div>
+
+{# ============ BEST-SELLERS ============ #}
+<section class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
+    <div class="flex flex-wrap items-end justify-between gap-4" data-reveal>
+        <div>
+            <p class="text-[11px] font-black uppercase tracking-[0.24em]" style="color:var(--accent)">Ils font craquer tout le monde</p>
+            <h2 class="font-display font-semibold text-4xl sm:text-5xl mt-2 text-balance">Nos <em class="italic">best-sellers</em></h2>
+        </div>
+        <a href="{{ path('discover') }}" class="btn-ghost rounded-full px-5 py-2.5 text-sm font-bold inline-flex items-center gap-2">
+            Tous les best-sellers <span aria-hidden="true">→</span>
+        </a>
+    </div>
+
+    <div class="mt-10 grid sm:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-7" data-stagger-grid>
+        {% for product in best|slice(0, 6) %}
+            <div data-reveal class="reveal-item">{{ include('components/product_card.html.twig', { product: product }) }}</div>
+        {% endfor %}
+    </div>
+</section>
+
+{# ============ CATEGORIES ============ #}
+<section class="relative py-14 lg:py-20" style="background:var(--surface-2)">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-2xl mx-auto" data-reveal>
+            <p class="text-[11px] font-black uppercase tracking-[0.24em]" style="color:var(--accent)">La carte Teako</p>
+            <h2 class="font-display font-semibold text-4xl sm:text-5xl mt-2">Une envie ? <em class="italic">Elle est ici.</em></h2>
+        </div>
+
+        <div class="mt-10 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4" data-stagger-grid>
+            {% for cat in categories|slice(0,5) %}
+            <a href="{{ path('category_show', { slug: cat.slug }) }}" class="group rounded-3xl surface-card p-6 text-center transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[var(--card-shadow-lg)]" data-reveal>
+                <span class="mx-auto w-16 h-16 rounded-2xl grid place-items-center text-3xl mb-4 transition-transform duration-500 group-hover:rotate-[-8deg] group-hover:scale-110"
+                      style="background:linear-gradient(135deg,var(--surface-3),var(--accent-soft))">
+                    {{ { 'Cafés glacés & Crémeux': '🥤', 'Signature': '⭐', 'Smoothies & Milkshakes': '🍓', 'Cafés & Lattes chauds': '☕', 'Thés & Matcha': '🍵' }[cat.name]|default('✨') }}
+                </span>
+                <span class="font-display font-semibold text-lg block leading-tight">{{ cat.name }}</span>
+                <span class="text-xs font-bold text-faint mt-1 block">{{ cat.products|length }} créations</span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+{# ============ STORY / LIFESTYLE ============ #}
+<section class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
+    <div class="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+        <div class="relative">
+            <div class="grid grid-cols-2 gap-4" data-stagger-grid>
+                <div data-reveal class="rounded-3xl overflow-hidden shadow-lg aspect-[3/4] rotate-[-2deg]">
+                    {{ include('components/blur_picture.html.twig', { url: asset('img/lifestyle-1.jpg'), blur: asset('img/lifestyle-1.jpg'), alt: 'Création glacée Teako', ratio: '3 / 4', eager: false }) }}
+                </div>
+                <div data-reveal class="rounded-3xl overflow-hidden shadow-lg aspect-[3/4] mt-10 rotate-[2deg]">
+                    {{ include('components/blur_picture.html.twig', { url: asset('img/lifestyle-3.jpg'), blur: asset('img/lifestyle-3.jpg'), alt: 'Préparation gourmande', ratio: '3 / 4' }) }}
+                </div>
+            </div>
+            <div class="absolute -bottom-5 left-1/2 -translate-x-1/2 rounded-2xl px-6 py-4 text-white text-center shadow-xl" style="background:linear-gradient(135deg,var(--cocoa-700,#5f4331),var(--cocoa-900,#37251b))">
+                <p class="font-display font-semibold text-xl leading-none">Teako sa Tiako ?</p>
+                <p class="text-[10px] font-black uppercase tracking-[0.2em] opacity-80 mt-1">« Teako, c’est ma préférée »</p>
+            </div>
+        </div>
+
+        <div data-reveal>
+            <p class="text-[11px] font-black uppercase tracking-[0.24em]" style="color:var(--accent)">Notre histoire</p>
+            <h2 class="font-display font-semibold text-4xl sm:text-5xl mt-2 text-balance">Née à Antsahavola, <em class="italic">pensée pour vous</em></h2>
+            <p class="mt-5 text-soft leading-relaxed">
+                Teako Gourmet Drinks est né d’une obsession simple : faire de chaque boisson un moment
+                inoubliable. Fruits de la passion, vanille de Madagascar, matcha de qualité, café torréfié avec soin —
+                tout est assemblé minute, devant vous, au bar du Lot IBF 9 Antsahavola.
+            </p>
+            <ul class="mt-6 space-y-3 text-sm font-semibold">
+                {% for point in ['Fruits et laits frais sélectionnés chaque matin','Recettes maison, zéro concentré','Emballages & gobelets responsables','Commandes prêtes en 10 à 15 minutes'] %}
+                <li class="flex items-center gap-3">
+                    <span class="w-6 h-6 rounded-full grid place-items-center text-white text-[11px] shrink-0" style="background:var(--accent)">✓</span>
+                    {{ point }}
+                </li>
+                {% endfor %}
+            </ul>
+            <a href="{{ path('about') }}" class="btn-ghost mt-8 inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-bold">Découvrir la maison <span>→</span></a>
+        </div>
+    </div>
+</section>
+
+{# ============ PROMO POSTER ============ #}
+{% if hero %}
+<section class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-20">
+    <div class="relative rounded-[2.4rem] overflow-hidden text-white shadow-[var(--card-shadow-lg)]" style="background:linear-gradient(115deg,#37251b 20%,#5f4331 60%,#8a5a34)">
+        <div class="absolute inset-0 opacity-[0.08]" style="background-image:radial-gradient(circle at 20% 20%, #fff 1.5px, transparent 1.5px); background-size:34px 34px;"></div>
+        <div class="grid lg:grid-cols-2 items-center relative">
+            <div class="p-8 sm:p-12 lg:p-16" data-reveal>
+                <span class="inline-block rounded-full px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.2em]" style="background:rgba(255,255,255,0.14); color:#f6c177">Signature Teako</span>
+                <h2 class="font-display font-semibold text-4xl sm:text-6xl mt-5 text-balance">Passion<br><em class="italic" style="color:#f6c177">Combava Vanille</em></h2>
+                <p class="mt-4 text-white/85 max-w-md">Notre création la plus aimée — la passion, le combava et la vanille de Madagascar. Le menu le dit, on le confirme :</p>
+                <p class="font-display italic text-2xl mt-3" style="color:#f6c177">« Goûte et deviens accro ! »</p>
+                <div class="mt-7 flex flex-wrap items-center gap-4">
+                    <a href="{{ path('product_show', { slug: hero.slug }) }}" class="inline-flex items-center gap-2 rounded-full px-7 py-3.5 font-extrabold text-sm text-[#37251b] transition-transform hover:scale-[1.03]" style="background:linear-gradient(120deg,#f2c078,#e2a14e)">
+                        Découvrir — {{ hero.priceCents|money }}
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                    </a>
+                    {% if hero.slug == 'passion-combava-vanille' %}
+                    <button type="button" data-add-to-cart data-product-id="{{ hero.id }}" data-restore-label="Ajouter"
+                            class="inline-flex items-center gap-2 rounded-full px-6 py-3.5 text-sm font-extrabold ring-1 ring-white/40 hover:bg-white/10 transition-colors">
+                        <span data-btn-label>Ajouter au panier</span>
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="relative h-72 sm:h-96 lg:h-auto lg:min-h-[30rem]" data-reveal>
+                <img src="{{ asset('img/brand-poster.jpg') }}" alt="Affiche Passion Combava Vanille — Teako" loading="lazy"
+                     class="absolute inset-0 w-full h-full object-cover object-top opacity-95">
+                <div class="absolute inset-0 bg-gradient-to-r from-[#37251b] via-transparent to-transparent"></div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{# ============ FRESH + CTA ============ #}
+<section class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-24">
+    <div class="flex flex-wrap items-end justify-between gap-4" data-reveal>
+        <div>
+            <p class="text-[11px] font-black uppercase tracking-[0.24em]" style="color:var(--accent)">Fraîchement sorti du shaker</p>
+            <h2 class="font-display font-semibold text-4xl sm:text-5xl mt-2">Et aussi… <em class="italic">les nouveautés</em></h2>
+        </div>
+        <a href="{{ path('menu') }}" class="text-sm font-extrabold inline-flex items-center gap-2 hover:gap-3 transition-all" style="color:var(--accent)">Carte complète →</a>
+    </div>
+    <div class="mt-10 grid sm:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-7" data-stagger-grid>
+        {% for product in fresh %}
+            <div data-reveal>{{ include('components/product_card.html.twig', { product: product }) }}</div>
+        {% endfor %}
+    </div>
+
+    <div class="mt-16 text-center" data-reveal>
+        <div class="inline-flex flex-col sm:flex-row items-center gap-5 rounded-[2rem] px-8 py-7 surface-card">
+            <span class="text-4xl" aria-hidden="true">📍</span>
+            <div class="text-left">
+                <p class="font-display text-2xl font-semibold">On vous attend au bar</p>
+                <p class="text-sm text-soft">Lot IBF 9 Antsahavola, 6 Rue Elysée Ravelotsalama — Antananarivo</p>
+            </div>
+            <a href="{{ path('menu') }}" class="btn-accent rounded-full px-6 py-3 text-sm font-extrabold ml-auto">Je commande</a>
+        </div>
+    </div>
+</section>
+{% endblock %}
