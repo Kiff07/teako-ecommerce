@@ -73,7 +73,7 @@ export default class extends Controller {
                 toast(data?.message || 'Import impossible.', 'error');
                 continue;
             }
-            this.items.push({ filename: data.url, alt: file.name.replace(/\.[a-zA-Z0-9]+$/, '').replace(/[-_]+/g, ' '), main: this.items.length === 0 });
+            this.items.push({ filename: data.url, thumb: data.thumb, alt: file.name.replace(/\.[a-zA-Z0-9]+$/, '').replace(/[-_]+/g, ' '), main: this.items.length === 0 });
             this.render();
             toast('Image importée ✓', 'success', 1800);
         }
@@ -155,7 +155,7 @@ export default class extends Controller {
         this.queueTarget.innerHTML = this.items.map((item, i) => `
             <li class="group relative rounded-2xl border divider overflow-hidden bg-surface cursor-grab active:cursor-grabbing" data-i="${i}" draggable="true" title="Glisser pour réordonner">
                 <div class="relative aspect-square bg-surface-3">
-                    <img src="${this._thumb(item.filename)}" data-orig="${this._esc(item.filename)}" onerror="this.onerror=null;this.src=this.dataset.orig" alt="" class="w-full h-full object-cover" loading="lazy">
+                    <img src="${item.thumb || this._thumb(item.filename)}" alt="" class="w-full h-full object-cover" loading="lazy">
                     ${item.main ? '<span class="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide" style="background:#d05f3a;color:#fff">Principale</span>' : ''}
                     <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/50 to-transparent p-1.5 opacity-0 group-hover:opacity-100 transition">
                         <div class="flex justify-center gap-1">
@@ -182,12 +182,7 @@ export default class extends Controller {
         const item = this.items[parseInt(li.dataset.i, 10)];
         if (!item) return;
         this.cropItem = item;
-        this.cropImgTarget.onerror = () => {
-            // -thumb variant not generated yet: preview the original file instead
-            this.cropImgTarget.onerror = null;
-            this.cropImgTarget.src = this._esc(item.filename);
-        };
-        this.cropImgTarget.src = this._thumb(item.filename);
+        this.cropImgTarget.src = item.thumb || this._thumb(item.filename);
         this.cropImgTarget.onload = () => this._layoutCrop();
         this.cropModalTarget.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
@@ -268,6 +263,7 @@ export default class extends Controller {
         this.spinnerTarget.classList.add('hidden');
         if (!ok) { toast(data?.message || 'Recadrage impossible.', 'error'); return; }
         item.filename = data.url;
+        item.thumb = data.thumb;
         this.closeCrop();
         this.render();
         toast('Image recadrée ✓', 'success', 2000);
@@ -292,7 +288,7 @@ export default class extends Controller {
 
     _thumb(url) {
         if (url.startsWith('http')) return url;
-        return url.replace(/\.(jpe?g|png|webp)$/i, '-thumb.$1');
+        return url.replace(/\.[a-zA-Z0-9]+$/, '-thumb.jpg');
     }
 
     _esc(s) {

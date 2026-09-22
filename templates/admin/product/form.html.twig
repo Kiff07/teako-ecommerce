@@ -56,9 +56,6 @@
 
             {# hidden state written before submit #}
             <input type="hidden" name="{{ form.imagesJson.vars.full_name }}" value="{{ imagesJson }}" data-uploader-target="imagesJson">
-            {# prevent form_end()/form_rest() from rendering a second empty field with
-               the same name — the empty duplicate would override the real value in POST #}
-            {% do form.imagesJson.setRendered() %}
 
             {# drop zone #}
             <div data-uploader-target="drop"
@@ -112,5 +109,8 @@
             {{ product.id ? 'Enregistrer les modifications' : 'Créer le produit' }}
         </button>
     </div>
-{{ form_end(form) }}
+    {# render_rest is disabled below (it would re-render imagesJson a 2nd time),
+       so the CSRF field — normally left to form_rest() — must be rendered by hand. #}
+    {% if form._token is defined %}{{ form_widget(form._token) }}{% endif %}
+{{ form_end(form, {render_rest: false}) }}
 {% endblock %}

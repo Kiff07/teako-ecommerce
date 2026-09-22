@@ -21,7 +21,7 @@ webpack_encore:
     # preload: true
 
     # Throw an exception if the entrypoints.json file is missing or an entry is missing from the data
-    # strict_mode: false
+    strict_mode: false
 
     # If you have multiple builds:
     # builds:
@@ -30,9 +30,9 @@ webpack_encore:
         # pass the build name as the 3rd argument to the Twig functions
         # {{ encore_entry_script_tags('entry1', null, 'frontend') }}
 
-framework:
-    assets:
-        json_manifest_path: '%kernel.project_dir%/public/build/manifest.json'
+# framework:
+#     assets:
+#         json_manifest_path: '%kernel.project_dir%/public/build/manifest.json'
 
 #when@prod:
 #    webpack_encore:

@@ -83,7 +83,7 @@ class ProductAdminController extends AbstractController
 
             $this->addFlash('success', 'Produit « '.$product->getName().' » créé.');
 
-            return $this->redirectToRoute('admin_product_edit', ['id' => $product->getId()]);
+            return $this->redirectToRoute('admin_product_index');
         }
 
         return $this->render('admin/product/form.html.twig', [
@@ -106,7 +106,7 @@ class ProductAdminController extends AbstractController
 
             $this->addFlash('success', 'Produit « '.$product->getName().' » mis à jour.');
 
-            return $this->redirectToRoute('admin_product_edit', ['id' => $product->getId()]);
+            return $this->redirectToRoute('admin_product_index');
         }
 
         $current = [];
@@ -191,8 +191,12 @@ class ProductAdminController extends AbstractController
         }
 
         [$w, $h] = array_values($this->images->dimensionsOf($url));
+        // Pre-warm the thumb variant now: the browser preview needs it right
+        // away, and /media/... is served as a plain static file, so nothing
+        // else would generate it before the next full page render.
+        $thumb = $this->images->variant($url, 'thumb')['url'];
 
-        return $this->json(['ok' => true, 'url' => $url, 'width' => $w, 'height' => $h, 'size' => $fileSize]);
+        return $this->json(['ok' => true, 'url' => $url, 'thumb' => $thumb, 'width' => $w, 'height' => $h, 'size' => $fileSize]);
     }
 
     #[Route('/recadrer', name: 'admin_image_crop', methods: ['POST'])]
@@ -210,11 +214,12 @@ class ProductAdminController extends AbstractController
 
         try {
             $this->images->crop($url, (float) ($payload['x'] ?? 0), (float) ($payload['y'] ?? 0), (float) ($payload['w'] ?? 1), (float) ($payload['h'] ?? 1));
+            $thumb = $this->images->variant($url, 'thumb')['url'];
         } catch (\Throwable $e) {
             return $this->json(['ok' => false, 'message' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-        return $this->json(['ok' => true, 'url' => $url]);
+        return $this->json(['ok' => true, 'url' => $url, 'thumb' => $thumb]);
     }
 
     #[Route('/fichier', name: 'admin_image_delete', methods: ['POST'])]
