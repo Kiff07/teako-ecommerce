@@ -12,7 +12,7 @@
                 <span class="w-2 h-2 rounded-full" style="background:var(--accent)"></span> Antananarivo · Madagascar
             </p>
             <h1 class="font-display font-semibold text-balance mt-5 text-5xl sm:text-6xl lg:text-[4.4rem] leading-[1.02]" data-reveal>
-                Goûte et<br>
+                Goûte et
                 <em class="italic" style="color:var(--accent)">deviens accro</em>
                 <span class="block mt-3 text-2xl sm:text-3xl text-soft font-normal">— c’est promis, c’est Teako.</span>
             </h1>
@@ -125,14 +125,48 @@
     <div class="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
         <div class="relative">
             <div class="grid grid-cols-2 gap-4" data-stagger-grid>
+                {# Photo 1 (Gauche) #}
                 <div data-reveal class="rounded-3xl overflow-hidden shadow-lg aspect-[3/4] rotate-[-2deg]">
                     {{ include('components/blur_picture.html.twig', { url: asset('img/lifestyle-1.jpg'), blur: asset('img/lifestyle-1.jpg'), alt: 'Création glacée Teako', ratio: '3 / 4', eager: false }) }}
                 </div>
-                <div data-reveal class="rounded-3xl overflow-hidden shadow-lg aspect-[3/4] mt-10 rotate-[2deg]">
-                    {{ include('components/blur_picture.html.twig', { url: asset('img/lifestyle-3.jpg'), blur: asset('img/lifestyle-3.jpg'), alt: 'Préparation gourmande', ratio: '3 / 4' }) }}
+
+                {# Vidéo de lancement (Droite) #}
+                <div data-reveal class="group relative rounded-3xl overflow-hidden shadow-2xl aspect-[3/4] mt-10 rotate-[2deg] bg-stone-900 cursor-pointer"
+                     onclick="const v = this.querySelector('video'); if (v) { v.paused ? v.play() : v.pause(); }">
+                    
+                    <video id="launch-video"
+                           autoplay
+                           muted
+                           loop
+                           playsinline
+                           preload="auto"
+                           onloadeddata="this.muted = true; this.play().catch(() => {}); if (this.currentTime === 0) this.currentTime = 0.2;"
+                           class="absolute inset-0 w-full h-full object-cover">
+                        <source src="{{ asset('videos/launch.mp4') }}" type="video/mp4">
+                    </video>
+
+                    {# Badge Lancement #}
+                    <div class="absolute top-3 left-3 z-10 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider text-white backdrop-blur-md bg-black/50 flex items-center gap-1.5 shadow pointer-events-none">
+                        <span class="w-2 h-2 rounded-full bg-[var(--accent)] animate-ping"></span>
+                        <span>Lancement</span>
+                    </div>
+
+                    {# Bouton Mute / Unmute #}
+                    <button type="button"
+                            onclick="event.stopPropagation(); const v = document.getElementById('launch-video'); if (v) { v.muted = !v.muted; this.querySelector('.vol-off').classList.toggle('hidden', !v.muted); this.querySelector('.vol-on').classList.toggle('hidden', v.muted); }"
+                            class="absolute bottom-3 right-3 z-20 w-8 h-8 rounded-full bg-black/60 text-white grid place-items-center text-xs backdrop-blur-sm hover:scale-110 active:scale-95 transition shadow"
+                            title="Couper / Activer le son">
+                        <span class="vol-off">🔇</span>
+                        <span class="vol-on hidden">🔊</span>
+                    </button>
+
+                    {# Dégradé subtil en bas pour la lisibilité #}
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none"></div>
                 </div>
             </div>
-            <div class="absolute -bottom-5 left-1/2 -translate-x-1/2 rounded-2xl px-6 py-4 text-white text-center shadow-xl" style="background:linear-gradient(135deg,var(--cocoa-700,#5f4331),var(--cocoa-900,#37251b))">
+
+            {# Badge Teako sa Tiako #}
+            <div class="absolute -bottom-5 left-1/2 -translate-x-1/2 rounded-2xl px-6 py-4 text-white text-center shadow-xl z-20" style="background:linear-gradient(135deg,var(--cocoa-700,#5f4331),var(--cocoa-900,#37251b))">
                 <p class="font-display font-semibold text-xl leading-none">Teako sa Tiako ?</p>
                 <p class="text-[10px] font-black uppercase tracking-[0.2em] opacity-80 mt-1">« Teako, c’est ma préférée »</p>
             </div>
@@ -167,7 +201,7 @@
         <div class="grid lg:grid-cols-2 items-center relative">
             <div class="p-8 sm:p-12 lg:p-16" data-reveal>
                 <span class="inline-block rounded-full px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.2em]" style="background:rgba(255,255,255,0.14); color:#f6c177">Signature Teako</span>
-                <h2 class="font-display font-semibold text-4xl sm:text-6xl mt-5 text-balance">Passion<br><em class="italic" style="color:#f6c177">Combava Vanille</em></h2>
+                <h2 class="font-display font-semibold text-4xl sm:text-6xl mt-5 text-balance">Passion <em class="italic" style="color:#f6c177">Combava Vanille</em></h2>
                 <p class="mt-4 text-white/85 max-w-md">Notre création la plus aimée — la passion, le combava et la vanille de Madagascar. Le menu le dit, on le confirme :</p>
                 <p class="font-display italic text-2xl mt-3" style="color:#f6c177">« Goûte et deviens accro ! »</p>
                 <div class="mt-7 flex flex-wrap items-center gap-4">
@@ -219,4 +253,15 @@
         </div>
     </div>
 </section>
+
+<script>
+    // Forçage de lecture automatique au chargement
+    document.addEventListener('DOMContentLoaded', () => {
+        const v = document.getElementById('launch-video');
+        if (v) {
+            v.muted = true;
+            v.play().catch(() => {});
+        }
+    });
+</script>
 {% endblock %}
