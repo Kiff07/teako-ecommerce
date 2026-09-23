@@ -42,6 +42,21 @@ class Admin implements UserInterface, PasswordAuthenticatedUserInterface
         $this->roles = ['ROLE_ADMIN'];
     }
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $avatar = null;
+
+    public function getAvatar(): ?string
+    {
+        return $this->avatar;
+    }
+
+    public function setAvatar(?string $avatar): static
+    {
+        $this->avatar = $avatar;
+
+        return $this;
+    }
+
     public function getId(): ?int
     {
         return $this->id;

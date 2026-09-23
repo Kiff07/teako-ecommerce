@@ -1,0 +1,102 @@
+{% extends 'admin/base.html.twig' %}
+{% block title %}Paramètres de la boutique — Teako Admin{% endblock %}
+
+{% block body %}
+<div class="max-w-4xl">
+    <h1 class="font-display font-bold text-3xl mb-1">Paramètres de la boutique</h1>
+    <p class="text-sm text-soft mb-8">Modifiez les coordonnées, horaires et textes affichés sur la vitrine.</p>
+
+    <form method="post" action="{{ path('admin_settings') }}" class="space-y-8">
+        <input type="hidden" name="_token" value="{{ csrf_token('admin_settings') }}">
+
+        {# 1. Coordonnées #}
+        <div class="rounded-3xl surface-card p-6 sm:p-8 space-y-5">
+            <h2 class="font-display font-bold text-xl flex items-center gap-2.5">
+                <span>📞</span> Coordonnées de contact
+            </h2>
+            <div class="grid sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="field-label block mb-1">Téléphone d'appel</label>
+                    <input type="text" name="phone" value="{{ settings.phone }}" class="field-input w-full" required>
+                </div>
+                <div>
+                    <label class="field-label block mb-1">WhatsApp</label>
+                    <input type="text" name="whatsapp" value="{{ settings.whatsapp }}" class="field-input w-full">
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="field-label block mb-1">E-mail de contact</label>
+                    <input type="email" name="email" value="{{ settings.email }}" class="field-input w-full" required>
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="field-label block mb-1">Adresse complète du bar</label>
+                    <input type="text" name="address" value="{{ settings.address }}" class="field-input w-full" required>
+                </div>
+            </div>
+        </div>
+
+        {# 2. Horaires & Fonctionnement #}
+        <div class="rounded-3xl surface-card p-6 sm:p-8 space-y-5">
+            <h2 class="font-display font-bold text-xl flex items-center gap-2.5">
+                <span>⏰</span> Horaires & Disponibilité
+            </h2>
+            <div class="grid sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="field-label block mb-1">Horaires d'ouverture</label>
+                    <input type="text" name="hours" value="{{ settings.hours }}" class="field-input w-full" placeholder="Tous les jours · 8h00 – 20h00" required>
+                </div>
+                <div>
+                    <label class="field-label block mb-1">Temps moyen de préparation</label>
+                    <input type="text" name="prep_time" value="{{ settings.prep_time }}" class="field-input w-full" placeholder="10-15 min">
+                </div>
+                <div>
+                    <label class="field-label block mb-1">Zone de livraison couverte</label>
+                    <input type="text" name="delivery_zone" value="{{ settings.delivery_zone }}" class="field-input w-full" placeholder="Antananarivo">
+                </div>
+                <div class="flex items-center pt-6">
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" name="is_open" value="1" {{ settings.is_open ? 'checked' : '' }} class="w-5 h-5 rounded accent-[var(--accent)]">
+                        <span class="text-sm font-bold">Bar actuellement ouvert aux commandes</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        {# 3. Bandeau d'annonce & Réseaux Sociaux #}
+        <div class="rounded-3xl surface-card p-6 sm:p-8 space-y-5">
+            <h2 class="font-display font-bold text-xl flex items-center gap-2.5">
+                <span>📢</span> Vitrine & Réseaux Sociaux
+            </h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="field-label block mb-1">Bandeau défilant (Haut de page)</label>
+                    <input type="text" name="banner_text" value="{{ settings.banner_text }}" class="field-input w-full">
+                </div>
+                <div>
+                    <label class="field-label block mb-1">Message d'annonce temporaire (Optionnel)</label>
+                    <input type="text" name="announcement" value="{{ settings.announcement }}" class="field-input w-full" placeholder="Ex: Promotion de rentrée ou fermeture exceptionnelle">
+                </div>
+                <div class="grid sm:grid-cols-3 gap-4 pt-2">
+                    <div>
+                        <label class="field-label block mb-1">Instagram</label>
+                        <input type="text" name="instagram" value="{{ settings.instagram }}" class="field-input w-full" placeholder="https://instagram.com/teako.mg">
+                    </div>
+                    <div>
+                        <label class="field-label block mb-1">Facebook</label>
+                        <input type="text" name="facebook" value="{{ settings.facebook }}" class="field-input w-full" placeholder="https://facebook.com/teako.mg">
+                    </div>
+                    <div>
+                        <label class="field-label block mb-1">TikTok</label>
+                        <input type="text" name="tiktok" value="{{ settings.tiktok }}" class="field-input w-full" placeholder="https://tiktok.com/@teako">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-2">
+            <button type="submit" class="btn-accent rounded-full px-8 py-3 text-sm font-extrabold text-white">
+                Enregistrer les paramètres
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

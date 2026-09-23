@@ -6,6 +6,7 @@ namespace App\Twig;
 
 use App\Entity\Product;
 use App\Repository\CategoryRepository;
+use App\Service\ShopSettingsService; // <-- CET IMPORT ÉTAIT MANQUANT
 use Symfony\Component\HttpFoundation\RequestStack;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
@@ -18,6 +19,7 @@ class AppExtension extends AbstractExtension
     public function __construct(
         private readonly RequestStack $requestStack,
         private readonly CategoryRepository $categories,
+        private readonly ShopSettingsService $settingsService,
     ) {
     }
 
@@ -28,7 +30,13 @@ class AppExtension extends AbstractExtension
             new TwigFunction('fav_ids', [$this, 'favIds']),
             new TwigFunction('store_categories', [$this, 'storeCategories']),
             new TwigFunction('money', [$this, 'money']),
+            new TwigFunction('shop_settings', [$this, 'getShopSettings']),
         ];
+    }
+
+    public function getShopSettings(): array
+    {
+        return $this->settingsService->getSettings();
     }
 
     public function money(int|float $cents): string

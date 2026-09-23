@@ -15,19 +15,19 @@
             <div class="mt-8 space-y-4">
                 <div class="flex gap-4 rounded-2xl surface-card p-5 items-start">
                     <span class="text-2xl" aria-hidden="true">📍</span>
-                    <div><p class="font-black uppercase tracking-widest text-[10px] text-faint">Adresse</p><p class="font-semibold mt-1">Lot IBF 9 Antsahavola, 6 Rue Elysée Ravelotsalama — Antananarivo</p></div>
+                    <div><p class="font-black uppercase tracking-widest text-[10px] text-faint">Adresse</p><p class="font-semibold mt-1">{{ shop_settings().address }}</p></div>
                 </div>
                 <div class="flex gap-4 rounded-2xl surface-card p-5 items-start">
                     <span class="text-2xl" aria-hidden="true">📞</span>
-                    <div><p class="font-black uppercase tracking-widest text-[10px] text-faint">Téléphone / WhatsApp</p><p class="font-semibold mt-1">+261 34 00 000 00</p></div>
+                    <div><p class="font-black uppercase tracking-widest text-[10px] text-faint">Téléphone / WhatsApp</p><p class="font-semibold mt-1">{{ shop_settings().phone }}</p></div>
                 </div>
                 <div class="flex gap-4 rounded-2xl surface-card p-5 items-start">
                     <span class="text-2xl" aria-hidden="true">✉️</span>
-                    <div><p class="font-black uppercase tracking-widest text-[10px] text-faint">E-mail</p><p class="font-semibold mt-1">hello@teako.mg</p></div>
+                    <div><p class="font-black uppercase tracking-widest text-[10px] text-faint">E-mail</p><p class="font-semibold mt-1">{{ shop_settings().email }}</p></div>
                 </div>
                 <div class="flex gap-4 rounded-2xl surface-card p-5 items-start">
                     <span class="text-2xl" aria-hidden="true">⏰</span>
-                    <div><p class="font-black uppercase tracking-widest text-[10px] text-faint">Horaires du bar</p><p class="font-semibold mt-1">Tous les jours · 8h00 – 20h00</p></div>
+                    <div><p class="font-black uppercase tracking-widest text-[10px] text-faint">Horaires du bar</p><p class="font-semibold mt-1">{{ shop_settings().hours }}</p></div>
                 </div>
             </div>
         </div>

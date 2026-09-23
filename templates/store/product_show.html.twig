@@ -27,7 +27,9 @@
                  data-gallery-target="stage" style="cursor:zoom-in">
 
                 {% for image in images %}
-                <div class="gallery-slide {{ loop.first ? 'active' : '' }}">
+                <div class="gallery-slide {{ loop.first ? 'active' : '' }}"
+                     data-gallery-target="slide"
+                     data-full="{{ image|product_image('big') }}">
                     {% set img = image|product_image_data('big') %}
                     <img src="{{ img.url }}"
                          data-real
@@ -40,7 +42,7 @@
                     <div class="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent pointer-events-none"></div>
                 </div>
                 {% else %}
-                <div class="gallery-slide active">
+                <div class="gallery-slide active" data-gallery-target="slide">
                     <div class="w-full h-full grid place-items-center" style="background:linear-gradient(140deg,var(--surface-3),var(--surface-2))">
                         <span class="font-display text-9xl italic opacity-30">{{ product.name|first|upper }}</span>
                     </div>

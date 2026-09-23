@@ -57,6 +57,7 @@
                 { label: 'Produits', icon: '🥤', route: 'admin_product_index' },
                 { label: 'Catégories', icon: '🗂️', route: 'admin_category_index' },
                 { label: 'Commandes', icon: '🧾', route: 'admin_order_index' },
+                { label: 'Paramètres', icon: '⚙️', route: 'admin_settings' },
             ] %}
             {% for item in items %}
             <a href="{{ path(item.route) }}"
@@ -74,13 +75,22 @@
         </nav>
 
         <div class="p-4 border-t divider">
-            <div class="flex items-center gap-3 rounded-2xl p-3 surface-card">
-                <span class="w-10 h-10 rounded-full grid place-items-center font-black text-white" style="background:linear-gradient(135deg,var(--matcha-500,#8aa34e),var(--cocoa-700,#5f4331))">{{ app.user.name|first|upper }}</span>
+            <a href="{{ path('admin_profile') }}" class="flex items-center gap-3 rounded-2xl p-3 surface-card hover:bg-surface-3 transition group" title="Modifier mon profil">
+                <div class="w-10 h-10 rounded-full overflow-hidden shrink-0 ring-1 ring-line">
+                    {% if app.user.avatar is defined and app.user.avatar %}
+                        <img src="{{ app.user.avatar }}" alt="{{ app.user.name }}" class="w-full h-full object-cover">
+                    {% else %}
+                        <span class="w-full h-full grid place-items-center font-black text-white" style="background:linear-gradient(135deg,var(--matcha-500,#8aa34e),var(--cocoa-700,#5f4331))">
+                            {{ app.user.name|first|upper }}
+                        </span>
+                    {% endif %}
+                </div>
                 <div class="min-w-0 flex-1">
-                    <p class="text-sm font-extrabold truncate">{{ app.user.name }}</p>
+                    <p class="text-sm font-extrabold truncate group-hover:text-[var(--accent)]">{{ app.user.name }}</p>
                     <p class="text-[11px] text-faint truncate">{{ app.user.email }}</p>
                 </div>
-            </div>
+                <span class="text-xs text-faint opacity-0 group-hover:opacity-100 transition">✏️</span>
+            </a>
             <form method="post" action="{{ path('admin_logout') }}" class="mt-2">
                 <button type="submit" class="w-full flex items-center justify-center gap-2 rounded-xl py-2 text-sm font-bold text-soft hover:bg-surface-3 transition-colors">↪ Déconnexion</button>
             </form>

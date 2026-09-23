@@ -1,0 +1,71 @@
+{% extends 'admin/base.html.twig' %}
+{% block title %}Mon Profil — Teako Admin{% endblock %}
+
+{% block body %}
+<div class="max-w-2xl">
+    <h1 class="font-display font-bold text-3xl mb-1">Mon Profil</h1>
+    <p class="text-sm text-soft mb-8">Personnalisez votre avatar et vos informations de connexion.</p>
+
+    <div class="rounded-3xl surface-card p-6 sm:p-8">
+        {{ form_start(form) }}
+        {{ form_errors(form) }}
+
+        <div class="flex items-center gap-6 pb-6 mb-6 border-b divider">
+            <div class="relative w-20 h-20 rounded-full overflow-hidden shadow-inner ring-2 ring-line bg-surface-3 flex items-center justify-center shrink-0">
+                {% if admin.avatar %}
+                    <img id="avatar-preview" src="{{ admin.avatar }}" alt="{{ admin.name }}" class="w-full h-full object-cover">
+                {% else %}
+                    <span id="avatar-placeholder" class="font-black text-2xl text-white w-full h-full grid place-items-center" style="background:linear-gradient(135deg,var(--matcha-500,#8aa34e),var(--cocoa-700,#5f4331))">
+                        {{ admin.name|first|upper }}
+                    </span>
+                    <img id="avatar-preview" src="" alt="" class="w-full h-full object-cover hidden">
+                {% endif %}
+            </div>
+            <div>
+                <label for="{{ form.avatarFile.vars.id }}" class="btn-accent inline-block cursor-pointer px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider text-white hover:opacity-90 transition">
+                    Changer la photo
+                </label>
+                <div class="hidden">
+                    {{ form_widget(form.avatarFile, { attr: { onchange: 'previewAvatar(this)' } }) }}
+                </div>
+                <p class="text-xs text-faint mt-1.5">JPG, PNG ou WebP. Carré recommandé, max 4 Mo.</p>
+                {{ form_errors(form.avatarFile) }}
+            </div>
+        </div>
+
+        <div class="space-y-5">
+            {{ form_row(form.name) }}
+            {{ form_row(form.email) }}
+
+            <div class="pt-4 border-t divider space-y-4">
+                <p class="text-xs font-black uppercase tracking-widest text-faint">Sécurité (Optionnel)</p>
+                {{ form_row(form.newPassword.first) }}
+                {{ form_row(form.newPassword.second) }}
+            </div>
+        </div>
+
+        <div class="mt-8 flex justify-end">
+            <button type="submit" class="btn-accent rounded-full px-8 py-3 text-sm font-extrabold text-white">
+                Enregistrer les modifications
+            </button>
+        </div>
+        {{ form_end(form) }}
+    </div>
+</div>
+
+<script>
+function previewAvatar(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const preview = document.getElementById('avatar-preview');
+            const placeholder = document.getElementById('avatar-placeholder');
+            preview.src = e.target.result;
+            preview.classList.remove('hidden');
+            if (placeholder) placeholder.classList.add('hidden');
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>
+{% endblock %}
