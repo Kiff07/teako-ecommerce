@@ -25,6 +25,6 @@ COPY . .
 RUN composer install --no-dev --optimize-autoloader --no-scripts
 
 # Permissions sur le dossier var
-RUN chown -R www-data:www-data /var/www/html/var
+RUN mkdir -p /var/www/html/var && chown -R www-data:www-data /var/www/html/var
 
 EXPOSE 80
