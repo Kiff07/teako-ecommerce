@@ -1,16 +1,16 @@
-FROM php:8.2-apache
+FROM php:8.3-apache
 
-# Installation des dépendances système et extensions PHP nécessaires
+# Installation des dépendances système et extensions PHP nécessaires (intl, pdo_pgsql, pdo_mysql, zip)
 RUN apt-get update && apt-get install -y \
     libicu-dev libzip-dev zip unzip git libpq-dev \
-    && docker-php-ext-install intl pdo pdo_pgsql pdo_mysql zip opcache
+    && docker-php-ext-install intl pdo pdo_pgsql pdo_mysql zip
 
 # Configuration du DocumentRoot vers /public pour Symfony
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/conf-available/*.conf
 
-# Activation de la réécriture d'URL Apache (.htaccess)
+# Activation de la réécriture d'URL Apache (.htaccess Symfony)
 RUN a2enmod rewrite
 
 # Copie de Composer
@@ -20,13 +20,11 @@ WORKDIR /var/www/html
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
-# Copie des fichiers du projet
+# Copie des fichiers et installation des dépendances sans scripts de build
 COPY . .
-
-# Installation des dépendances Composer
 RUN composer install --no-dev --optimize-autoloader --no-scripts
 
-# Attribution des droits sur le dossier var (logs, cache)
+# Permissions sur le dossier var
 RUN chown -R www-data:www-data /var/www/html/var
 
 EXPOSE 80
