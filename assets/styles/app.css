@@ -336,7 +336,13 @@ h1, h2, h3, h4, .font-display {
 }
 
 /* marquee strip */
-.marquee-track { display:flex; gap:2.5rem; width:max-content; animation: marquee 32s linear infinite; }
+.marquee-track { 
+    display: flex !important; 
+    gap: 2.5rem !important; 
+    width: max-content !important; 
+    animation: marquee 32s linear infinite !important; 
+    will-change: transform;
+}
 
 /* fly-to-cart ghost */
 .fly-ghost {
@@ -456,3 +462,18 @@ h1, h2, h3, h4, .font-display {
 [data-stagger-grid].is-in > *:nth-child(8) { transition-delay: 690ms; }
 [data-stagger-grid].is-in > *:nth-child(9) { transition-delay: 780ms; }
 [data-stagger-grid].is-in > *:nth-child(10) { transition-delay: 870ms; }
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  display: flex !important;
+  width: max-content !important;
+  animation: marquee 20s linear infinite !important;
+}
