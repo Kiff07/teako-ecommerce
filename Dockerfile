@@ -29,6 +29,10 @@ RUN composer install --no-dev --optimize-autoloader --no-scripts
 # Création du dossier var et permissions
 RUN mkdir -p /var/www/html/var && chown -R www-data:www-data /var/www/html/var
 
+# Rend le script d'entrée exécutable
+RUN chmod +x /var/www/html/entrypoint.sh
+
 EXPOSE 80
 
-CMD ["apache2-foreground"]
+# Exécution du script au démarrage
+ENTRYPOINT ["/var/www/html/entrypoint.sh"]
