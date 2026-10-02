@@ -1,6 +1,6 @@
 FROM php:8.3-apache
 
-# Installation des dépendances système et extensions PHP nécessaires (intl, pdo_pgsql, pdo_mysql, zip)
+# Installation des paquets système et extensions PHP
 RUN apt-get update && apt-get install -y \
     libicu-dev libzip-dev zip unzip git libpq-dev \
     && docker-php-ext-install intl pdo pdo_pgsql pdo_mysql zip
@@ -10,7 +10,7 @@ ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/conf-available/*.conf
 
-# Activation de la réécriture d'URL Apache (.htaccess Symfony)
+# Activation du module rewrite d'Apache
 RUN a2enmod rewrite
 
 # Copie de Composer
@@ -20,11 +20,16 @@ WORKDIR /var/www/html
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
-# Copie des fichiers et installation des dépendances sans scripts de build
+# Copie des fichiers du projet
 COPY . .
+
+# Installation des dépendances
 RUN composer install --no-dev --optimize-autoloader --no-scripts
 
-# Permissions sur le dossier var
+# Création du dossier var et permissions
 RUN mkdir -p /var/www/html/var && chown -R www-data:www-data /var/www/html/var
+
+# Commande de démarrage : lance les migrations puis démarre Apache
+CMD ["sh", "-c", "php bin/console doctrine:migrations:migrate --no-interaction && apache2-foreground"]
 
 EXPOSE 80
