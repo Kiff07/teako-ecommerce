@@ -29,7 +29,6 @@ RUN composer install --no-dev --optimize-autoloader --no-scripts
 # Création du dossier var et permissions
 RUN mkdir -p /var/www/html/var && chown -R www-data:www-data /var/www/html/var
 
-# Commande de démarrage : lance les migrations puis démarre Apache
-CMD ["sh", "-c", "php bin/console doctrine:migrations:migrate --no-interaction && apache2-foreground"]
-
 EXPOSE 80
+
+CMD ["apache2-foreground"]
