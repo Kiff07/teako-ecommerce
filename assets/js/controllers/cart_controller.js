@@ -1,6 +1,30 @@
 import { Controller } from '@hotwired/stimulus';
 import { jsonFetch, toast, money, escapeHtml, flyToCart } from '../teako';
 
+/**
+ * Global cart: one instance on <body>. Handles every "add to cart",
+ * quantity change and removal, the header badge and the slide-in drawer.
+ * Interactions are bound through delegated listeners so dynamically injected
+ * drawer content keeps working.
+ *
+ * ─── CORRECTIONS APPORTÉES (bug « − supprime tout / + bloqué à 2 ») ───
+ * 1. La quantité courante n'est plus lue dans le DOM du tiroir (lecture
+ *    fragile qui échouait et retombait sur `return 1` : moins → 1-1 = 0 →
+ *    suppression, plus → 1+1 = 2 → blocage à 2). Elle est maintenant lue
+ *    dans `this.state.lines`, l'état synchronisé avec le serveur. La lecture
+ *    DOM ne sert plus que de secours.
+ * 2. Les réponses serveur sont normalisées : certains endpoints renvoient
+ *    l'état au premier niveau (`{count, totalCents, lines}`), d'autres
+ *    enveloppé (`{message, data: {...}}`). Avant, `this.state = data.data`
+ *    pouvait valoir `undefined` et faire planter `_applyState()`, donc
+ *    empêcher tout re-rendu du tiroir.
+ * 3. Les noms de champs des lignes sont normalisés aussi (`qty|quantity`,
+ *    `lineId|id|productId`, `lineTotalCents|totalCents|priceCents*qty`).
+ * 4. Garde anti double-clic par ligne (un clic pendant une requête en cours
+ *    est ignoré) pour éviter les sauts de quantité.
+ * 5. Si le tiroir n'est pas re-rendu par Stimulus (targets Twig absents),
+ *    la ligne affichée est retouchée en place (quantité, total, suppression).
+ */
 export default class extends Controller {
     static targets = [
         'badgeWrap', 'badgeCount', 'drawer', 'drawerBackdrop',
@@ -9,6 +33,7 @@ export default class extends Controller {
 
     connect() {
         this.state = { count: 0, totalCents: 0, lines: [] };
+        this._pending = new Set();
         this.element.addEventListener('click', this._delegate);
         this.element.addEventListener('change', this._delegateChange);
         document.addEventListener('keydown', (e) => {
@@ -24,9 +49,7 @@ export default class extends Controller {
     async refresh() {
         const { ok, data } = await jsonFetch('/panier/etat');
         if (!ok) return;
-        this.state = data;
-        this._applyState();
-        this._syncPageRows();
+        this._adoptSync(data);
     }
 
     async addFrom(btn) {
@@ -71,9 +94,7 @@ export default class extends Controller {
         btn.disabled = false;
         delete btn.dataset.busy;
 
-        this.state = data.data;
-        this._applyState();
-        this._syncPageRows();
+        await this._adopt(data);
     }
 
     openDrawer() {
@@ -92,6 +113,89 @@ export default class extends Controller {
 
     /* ---------------- state sync ---------------- */
 
+    /**
+     * Accepte les deux formes de réponse serveur et les deux jeux de noms
+     * de champs, et garantit un état complet : { count, totalCents, lines[] }
+     * avec, par ligne : lineId, quantity, priceCents, lineTotalCents, stock,
+     * name, image, slug.
+     */
+    _normalize(raw) {
+        const src = raw && Array.isArray(raw.lines)
+            ? raw
+            : (raw && raw.data && Array.isArray(raw.data.lines) ? raw.data : null);
+        if (!src) return null;
+
+        const lines = (src.lines || []).map((l) => {
+            const quantity = Number(l.quantity ?? l.qty ?? 1);
+            const priceCents = Number(l.priceCents ?? l.price ?? 0);
+            return {
+                ...l,
+                lineId: String(l.lineId ?? l.id ?? l.productId ?? l.product_id ?? ''),
+                quantity: Number.isFinite(quantity) ? quantity : 1,
+                priceCents,
+                stock: (l.stock ?? l.stockQuantity) != null ? Number(l.stock ?? l.stockQuantity) : null,
+                lineTotalCents: Number(l.lineTotalCents ?? l.totalCents ?? priceCents * quantity),
+            };
+        });
+
+        const count = Number.isFinite(src.count)
+            ? Number(src.count)
+            : lines.reduce((n, l) => n + l.quantity, 0);
+        const totalCents = Number.isFinite(src.totalCents)
+            ? Number(src.totalCents)
+            : lines.reduce((n, l) => n + l.lineTotalCents, 0);
+
+        return { count, totalCents, lines };
+    }
+
+    /** Synchrone : true si le payload a pu être adopté, false sinon. */
+    _adoptSync(payload) {
+        const next = this._normalize(payload);
+        if (!next) return false;
+        this.state = next;
+        this._applyState();
+        this._syncPageRows();
+        return true;
+    }
+
+    /** Asynchrone : si la forme est inconnue, on se resynchronise via /panier/etat. */
+    async _adopt(payload) {
+        if (this._adoptSync(payload)) return;
+        await this.refresh();
+    }
+
+    _findLine(lineId) {
+        const id = String(lineId);
+        return (this.state.lines || []).find((l) => l.lineId === id) || null;
+    }
+
+    /**
+     * Quantité courante d'une ligne. Source de vérité : l'état synchronisé
+     * avec le serveur. La lecture DOM n'est qu'un filet de secours.
+     */
+    _currentQty(lineId, btn = null) {
+        const line = this._findLine(lineId);
+        if (line) return line.quantity;
+
+        if (btn) {
+            const widget = btn.closest('[data-line-widget], [data-qty-wrap], [data-stepper]');
+            const qtyEl = widget && (widget.querySelector('[data-line-qty]')
+                || widget.querySelector('input[data-qty]')
+                || widget.querySelector('span'));
+            if (qtyEl) {
+                const raw = qtyEl.tagName === 'INPUT' ? qtyEl.value : qtyEl.textContent;
+                const parsed = parseInt(String(raw).trim(), 10);
+                if (!Number.isNaN(parsed) && parsed > 0) return parsed;
+            }
+        }
+
+        const row = document.querySelector(`[data-cart-row-id="${lineId}"]`);
+        const input = row && row.querySelector('[data-qty]');
+        if (input) return parseInt(input.value, 10) || 1;
+
+        return 1;
+    }
+
     _applyState() {
         const count = this.state.count || 0;
         if (this.hasBadgeCountTarget) this.badgeCountTarget.textContent = count;
@@ -105,7 +209,7 @@ export default class extends Controller {
         const empty = lines.length === 0;
 
         this.drawerLinesTarget.innerHTML = empty ? '' : lines.map((line) => `
-            <div class="flex gap-3 py-3 border-b divider">
+            <div class="cart-line flex gap-3 py-3 border-b divider">
                 <a href="/produit/${escapeHtml(line.slug || '')}" class="shrink-0 w-16 h-16 rounded-xl overflow-hidden bg-surface-3 ring-line">
                     <img src="${escapeHtml(line.image)}" alt="" class="w-full h-full object-cover" loading="lazy">
                 </a>
@@ -119,10 +223,10 @@ export default class extends Controller {
                     <div class="mt-auto flex items-center justify-between pt-1.5">
                         <div class="inline-flex items-center rounded-full border divider overflow-hidden" data-line-widget>
                             <button class="w-7 h-7 grid place-items-center text-soft hover:text-[var(--accent)]" data-cart-minus data-line-id="${line.lineId}" aria-label="Moins">−</button>
-                            <span class="w-6 text-center text-[13px] font-bold tabular-nums">${line.quantity}</span>
+                            <span data-line-qty class="w-6 text-center text-[13px] font-bold tabular-nums">${line.quantity}</span>
                             <button class="w-7 h-7 grid place-items-center text-soft hover:text-[var(--accent)]" data-cart-plus data-line-id="${line.lineId}" aria-label="Plus">+</button>
                         </div>
-                        <span class="text-[13px] font-extrabold tabular-nums">${money(line.lineTotalCents)}</span>
+                        <span data-line-total class="text-[13px] font-extrabold tabular-nums">${money(line.lineTotalCents)}</span>
                     </div>
                 </div>
             </div>`).join('');
@@ -142,14 +246,14 @@ export default class extends Controller {
         const lines = this.state.lines || [];
 
         page.querySelectorAll('[data-cart-row-id]').forEach((row) => {
-            const id = parseInt(row.dataset.cartRowId, 10);
+            const id = String(row.dataset.cartRowId);
             const line = lines.find((l) => l.lineId === id);
             const input = row.querySelector('[data-qty]');
             const total = row.querySelector('[data-row-total]');
             if (line) {
                 if (input) input.value = line.quantity;
                 if (total) this._bump(total, money(line.lineTotalCents));
-                row.querySelectorAll('[data-cart-plus]').forEach((b) => { b.disabled = line.quantity >= line.stock; });
+                row.querySelectorAll('[data-cart-plus]').forEach((b) => { b.disabled = line.stock != null && line.quantity >= line.stock; });
                 row.querySelectorAll('[data-cart-minus]').forEach((b) => { b.disabled = line.quantity <= 1; });
             }
         });
@@ -167,6 +271,44 @@ export default class extends Controller {
         if (countEl) countEl.textContent = this.state.count || 0;
     }
 
+    /**
+     * Filet de sécurité : si le tiroir n'est pas rendu par Stimulus
+     * (targets Twig absents), on retouche la ligne affichée en place.
+     */
+    _patchDrawerLine(lineId) {
+        if (this.hasDrawerLinesTarget) return; // déjà re-rendu entièrement
+        const line = this._findLine(lineId);
+        const btn = this.element.querySelector(`[data-cart-minus][data-line-id="${lineId}"], [data-cart-plus][data-line-id="${lineId}"]`);
+        const widget = btn && btn.closest('[data-line-widget], [data-qty-wrap], [data-stepper]');
+        if (!widget) return;
+
+        const qtyEl = widget.querySelector('[data-line-qty]') || widget.querySelector('input[data-qty]') || widget.querySelector('span');
+        if (qtyEl && line) {
+            if (qtyEl.tagName === 'INPUT') qtyEl.value = line.quantity;
+            else qtyEl.textContent = line.quantity;
+        }
+        const totalEl = widget.parentElement && widget.parentElement.querySelector('[data-line-total], [data-row-total]');
+        if (totalEl && line) totalEl.textContent = money(line.lineTotalCents);
+    }
+
+    /** Retrouve le conteneur « ligne » (tiroir ou page panier) pour l'animation/suppression DOM. */
+    _drawerRow(lineId) {
+        const rowById = document.querySelector(`[data-cart-row-id="${lineId}"]`);
+        if (rowById) return rowById;
+        const btn = this.element.querySelector(
+            `[data-cart-minus][data-line-id="${lineId}"], [data-cart-plus][data-line-id="${lineId}"], [data-cart-remove][data-line-id="${lineId}"]`
+        );
+        if (!btn) return null;
+        const direct = btn.closest('[data-drawer-line], .cart-line');
+        if (direct) return direct;
+        let node = btn.closest('[data-line-widget], [data-qty-wrap], [data-stepper]') || btn;
+        for (let i = 0; i < 6 && node; i++) {
+            node = node.parentElement;
+            if (node && node.querySelector('[data-cart-remove]') && node.querySelector('img')) return node;
+        }
+        return null;
+    }
+
     _bump(el, text) {
         el.textContent = text;
         el.classList.remove('total-bump');
@@ -177,53 +319,57 @@ export default class extends Controller {
     /* ---------------- mutations ---------------- */
 
     async _changeQty(lineId, qty) {
-        const { ok, data } = await jsonFetch(`/panier/maj/${lineId}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({ qty }),
-        });
-        if (!ok) { toast(data?.message || 'Mise à jour impossible.', 'error'); return; }
-        this.state = data.data;
-        this._applyState();
-        this._syncPageRows();
+        const key = `qty:${lineId}`;
+        if (this._pending.has(key)) return; // anti double-clic
+        this._pending.add(key);
+        try {
+            const { ok, data } = await jsonFetch(`/panier/maj/${lineId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({ qty }),
+            });
+            if (!ok) {
+                toast(data?.message || 'Mise à jour impossible.', 'error');
+                await this.refresh();
+                this._patchDrawerLine(lineId);
+                return;
+            }
+            await this._adopt(data);
+            this._patchDrawerLine(lineId);
+        } finally {
+            this._pending.delete(key);
+        }
     }
 
     async _removeLine(lineId) {
-        const row = document.querySelector(`[data-cart-row-id="${lineId}"]`);
-        if (row) {
-            row.classList.add('leaving');
-            await new Promise((r) => setTimeout(r, 360));
-            row.remove();
+        const key = `qty:${lineId}`;
+        if (this._pending.has(key)) return;
+        this._pending.add(key);
+        try {
+            const row = this._drawerRow(lineId);
+            if (row) {
+                row.classList.add('leaving');
+                await new Promise((r) => setTimeout(r, 360));
+            }
+            const { ok, data } = await jsonFetch(`/panier/supprimer/${lineId}`, { method: 'POST' });
+            if (!ok) {
+                row?.classList?.remove('leaving');
+                toast(data?.message || 'Suppression impossible.', 'error');
+                await this.refresh();
+                return;
+            }
+            const rerendered = this._adoptSync(data);
+            if (rerendered && this.hasDrawerLinesTarget) {
+                row?.remove(); // ligne de la page panier, hors re-rendu Stimulus
+            } else {
+                row?.remove();
+                if (!rerendered) await this.refresh();
+            }
+        } finally {
+            this._pending.delete(key);
         }
-        const { ok, data } = await jsonFetch(`/panier/supprimer/${lineId}`, { method: 'POST' });
-        if (!ok) { toast(data?.message || 'Suppression impossible.', 'error'); return; }
-        this.state = data.data;
-        this._applyState();
-        this._syncPageRows();
     }
 
-    _lineQtyFrom(lineId, btnTarget = null) {
-            // 1. Si un bouton a été cliqué, on regarde directement son conteneur parent (drawer)
-            if (btnTarget) {
-                const container = btnTarget.closest('[data-line-widget]');
-                if (container) {
-                    const span = container.querySelector('span');
-                    if (span) {
-                        const parsed = parseInt(span.textContent.trim(), 10);
-                        if (!isNaN(parsed)) return parsed;
-                    }
-                }
-            }
-
-            // 2. Recherche dans une page panier classique (champ input)
-            const row = document.querySelector(`[data-cart-row-id="${lineId}"]`);
-            if (row) {
-                const input = row.querySelector('[data-qty]');
-                if (input) return parseInt(input.value, 10) || 1;
-            }
-
-            return 1;
-        }
     _delegate = (event) => {
         const plus = event.target.closest('[data-cart-plus]');
         const minus = event.target.closest('[data-cart-minus]');
@@ -239,22 +385,26 @@ export default class extends Controller {
 
         if (plus) {
             event.preventDefault();
-            // On passe 'plus' en 2ème argument pour cibler exactement le bon bouton
-            const currentQty = this._lineQtyFrom(plus.dataset.lineId, plus);
-            this._changeQty(plus.dataset.lineId, currentQty + 1);
+            const lineId = plus.dataset.lineId;
+            // Quantité lue dans l'état synchronisé serveur (plus dans le DOM).
+            const currentQty = this._currentQty(lineId, plus);
+            const line = this._findLine(lineId);
+            if (line && line.stock != null && currentQty >= line.stock) {
+                toast(`Stock maximum atteint (${line.stock}).`, 'info', 2200);
+                return;
+            }
+            this._changeQty(lineId, currentQty + 1);
             return;
         }
 
         if (minus) {
             event.preventDefault();
-            // On passe 'minus' en 2ème argument
-            const currentQty = this._lineQtyFrom(minus.dataset.lineId, minus);
-            const newQty = currentQty - 1;
-
-            if (newQty <= 0) {
-                this._removeLine(minus.dataset.lineId);
+            const lineId = minus.dataset.lineId;
+            const currentQty = this._currentQty(lineId, minus);
+            if (currentQty <= 1) {
+                this._removeLine(lineId);
             } else {
-                this._changeQty(minus.dataset.lineId, newQty);
+                this._changeQty(lineId, currentQty - 1);
             }
             return;
         }

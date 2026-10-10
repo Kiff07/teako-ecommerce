@@ -90,7 +90,7 @@ class CartController extends AbstractController
             'message' => $message,
             'data' => $this->cartSession->toArray($cart),
         ]);
-        $response->headers->setCookie(CartSession::cookieFor($cart->getToken()));
+        $response->headers->setCookie(CartSession::cookieFor($cart->getToken(), $request->isSecure()));
 
         return $response;
     }

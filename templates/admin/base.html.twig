@@ -98,14 +98,47 @@
     </aside>
 
     {# ---- main column ---- #}
-    <div class="flex flex-col min-w-0">
+    <div class="flex flex-col min-w-0" data-controller="menu">
         <header class="lg:hidden sticky top-0 z-40 flex items-center justify-between h-16 px-4 border-b divider backdrop-blur-xl bg-surface/90">
+            <button type="button" class="w-10 h-10 -ml-2 grid place-items-center rounded-xl btn-ghost" data-action="menu#toggle" aria-label="Ouvrir le menu admin">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+            </button>
             <a href="{{ path('admin_dashboard') }}" class="flex items-center gap-2 font-display font-bold text-lg">🥤 Teako Admin</a>
             <div class="flex gap-2 text-xl">
                 <a href="{{ path('home') }}" class="w-10 h-10 grid place-items-center rounded-xl btn-ghost" aria-label="Boutique">🏠</a>
                 <a href="{{ path('admin_product_new') }}" class="btn-accent w-10 h-10 grid place-items-center rounded-xl text-white" aria-label="Nouveau produit">＋</a>
             </div>
         </header>
+
+        {# ---- menu mobile off-canvas (hors du header blur : sinon le
+           containing block créé par backdrop-filter piège le fixed) ---- #}
+        <div data-menu-target="backdrop" class="fixed inset-0 z-50 bg-black/40 hidden lg:hidden" data-action="click->menu#close"></div>
+        <div data-menu-target="panel" class="fixed top-0 left-0 bottom-0 z-50 w-[86vw] max-w-xs bg-surface border-r divider -translate-x-full transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] flex flex-col lg:hidden" role="dialog" aria-modal="true" aria-label="Menu admin">
+            <div class="flex items-center justify-between px-5 py-4 border-b divider">
+                <span class="font-display font-bold text-lg">🥤 Teako Admin</span>
+                <button type="button" class="w-9 h-9 grid place-items-center rounded-full btn-ghost" data-action="menu#close" aria-label="Fermer">✕</button>
+            </div>
+            <nav class="flex-1 overflow-y-auto p-4 space-y-1">
+                {% for item in items %}
+                <a href="{{ path(item.route) }}" data-action="menu#close"
+                   class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold transition-colors {{ route == item.route ? 'text-white' : 'text-soft hover:bg-surface-3' }}"
+                   {% if route == item.route %}style="background:linear-gradient(120deg,var(--gold),var(--accent))"{% endif %}>
+                    <span aria-hidden="true">{{ item.icon }}</span> {{ item.label }}
+                </a>
+                {% endfor %}
+                <div class="pt-4 mt-4 border-t divider space-y-1">
+                    <p class="px-4 text-[10px] font-black uppercase tracking-[0.2em] text-faint">Vitrine</p>
+                    <a href="{{ path('home') }}" data-action="menu#close" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold text-soft hover:bg-surface-3">🏠 Voir la boutique</a>
+                    <a href="{{ path('menu') }}" data-action="menu#close" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold text-soft hover:bg-surface-3">📖 La carte en ligne</a>
+                </div>
+                <div class="pt-4 mt-4 border-t divider space-y-1">
+                    <a href="{{ path('admin_profile') }}" data-action="menu#close" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold text-soft hover:bg-surface-3">👤 Mon profil</a>
+                    <form method="post" action="{{ path('admin_logout') }}">
+                        <button type="submit" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold text-soft hover:bg-surface-3">↪ Déconnexion</button>
+                    </form>
+                </div>
+            </nav>
+        </div>
 
         <main class="flex-1 p-4 sm:p-6 lg:p-10 max-w-[1200px] w-full">
             {% for type, messages in app.flashes %}
@@ -120,7 +153,6 @@
     </div>
 </div>
 
-<script src="https://unpkg.com/@hotwired/stimulus/umd/stimulus.umd.js"></script>
 {{ encore_entry_script_tags('app') }}
 <script>
     document.addEventListener('click', async (e) => {

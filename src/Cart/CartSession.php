@@ -22,9 +22,9 @@ class CartSession
     ) {
     }
 
-    public static function cookieFor(string $token): Cookie
+    public static function cookieFor(string $token, bool $secure = false): Cookie
     {
-        return Cookie::create(self::COOKIE, $token, time() + self::LIFETIME, '/', null, false, true, false, 'lax');
+        return Cookie::create(self::COOKIE, $token, time() + self::LIFETIME, '/', null, $secure, true, false, 'lax');
     }
 
     public static function clearCookie(): Cookie

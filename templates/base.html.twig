@@ -85,7 +85,11 @@
 </div>
 
 {# ---- header ---- #}
-<header class="sticky top-0 z-50 backdrop-blur-xl bg-surface/85 border-b divider">
+{# Le flou est porté par une couche interne : un `backdrop-filter` sur <header>
+   créerait un "containing block" qui piègerait le panneau mobile en
+   position fixed (menu cassé / écrasé sur 64px de haut). #}
+<header class="sticky top-0 z-50 border-b divider">
+    <div aria-hidden="true" class="absolute inset-0 -z-10 backdrop-blur-xl bg-surface/85"></div>
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16 gap-3" data-controller="menu">
             {# burger #}
@@ -272,7 +276,6 @@
     </div>
 </footer>
 
-<script src="https://unpkg.com/@hotwired/stimulus/umd/stimulus.umd.js"></script>
 <script>window.TEAKO_ROUTES = { add: '/panier/ajouter/', cart: '/panier/etat' };</script>
 {{ encore_entry_script_tags('app') }}
 {% block javascripts %}{% endblock %}

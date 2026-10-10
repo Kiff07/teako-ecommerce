@@ -17,6 +17,12 @@ class ImageProcessor
     public const MAX_BYTES = 5 * 1024 * 1024; // 5 Mo
     private const ALLOWED_MIME = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
 
+    /** Seuls les médias gérés par l'app peuvent être recadrés / supprimés. */
+    private static function isAllowedUrl(string $url): bool
+    {
+        return 1 === preg_match('#^/(media|uploads/tmp)/[A-Za-z0-9][A-Za-z0-9/._-]*$#', $url);
+    }
+
     public function __construct(
         private readonly string $mediaDir,
         private readonly string $tmpDir,
@@ -253,6 +259,9 @@ class ImageProcessor
 
     public function deleteFile(string $url): void
     {
+        if (!self::isAllowedUrl($url)) {
+            return;
+        }
         $path = $this->publicPath($url);
         if (is_file($path)) {
             @unlink($path);
@@ -266,6 +275,9 @@ class ImageProcessor
      */
     public function crop(string $url, float $x, float $y, float $w, float $h): string
     {
+        if (!self::isAllowedUrl($url)) {
+            throw new \RuntimeException('Chemin d\'image invalide.');
+        }
         $path = $this->publicPath($url);
         if (!is_file($path)) {
             throw new \RuntimeException('Fichier image introuvable.');
