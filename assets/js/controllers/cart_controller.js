@@ -1,12 +1,6 @@
 import { Controller } from '@hotwired/stimulus';
 import { jsonFetch, toast, money, escapeHtml, flyToCart } from '../teako';
 
-/**
- * Global cart: one instance on <body>. Handles every "add to cart",
- * quantity change and removal, the header badge and the slide-in drawer.
- * Interactions are bound through delegated listeners so dynamically injected
- * drawer content keeps working.
- */
 export default class extends Controller {
     static targets = [
         'badgeWrap', 'badgeCount', 'drawer', 'drawerBackdrop',
@@ -208,17 +202,28 @@ export default class extends Controller {
         this._syncPageRows();
     }
 
-    _lineQtyFrom(lineId) {
-        const row = document.querySelector(`[data-cart-row-id="${lineId}"]`);
-        if (row) {
-            const input = row.querySelector('[data-qty]');
-            if (input) return parseInt(input.value, 10) || 1;
-        }
-        const widget = document.querySelector(`[data-line-id="${lineId}"]`);
-        const span = widget ? widget.parentElement.querySelector('span.tabular-nums') : null;
-        return span ? parseInt(span.textContent, 10) || 1 : 1;
-    }
+    _lineQtyFrom(lineId, btnTarget = null) {
+            // 1. Si un bouton a été cliqué, on regarde directement son conteneur parent (drawer)
+            if (btnTarget) {
+                const container = btnTarget.closest('[data-line-widget]');
+                if (container) {
+                    const span = container.querySelector('span');
+                    if (span) {
+                        const parsed = parseInt(span.textContent.trim(), 10);
+                        if (!isNaN(parsed)) return parsed;
+                    }
+                }
+            }
 
+            // 2. Recherche dans une page panier classique (champ input)
+            const row = document.querySelector(`[data-cart-row-id="${lineId}"]`);
+            if (row) {
+                const input = row.querySelector('[data-qty]');
+                if (input) return parseInt(input.value, 10) || 1;
+            }
+
+            return 1;
+        }
     _delegate = (event) => {
         const plus = event.target.closest('[data-cart-plus]');
         const minus = event.target.closest('[data-cart-minus]');
@@ -234,14 +239,26 @@ export default class extends Controller {
 
         if (plus) {
             event.preventDefault();
-            this._changeQty(plus.dataset.lineId, this._lineQtyFrom(plus.dataset.lineId) + 1);
+            // On passe 'plus' en 2ème argument pour cibler exactement le bon bouton
+            const currentQty = this._lineQtyFrom(plus.dataset.lineId, plus);
+            this._changeQty(plus.dataset.lineId, currentQty + 1);
             return;
         }
+
         if (minus) {
             event.preventDefault();
-            this._changeQty(minus.dataset.lineId, this._lineQtyFrom(minus.dataset.lineId) - 1);
+            // On passe 'minus' en 2ème argument
+            const currentQty = this._lineQtyFrom(minus.dataset.lineId, minus);
+            const newQty = currentQty - 1;
+
+            if (newQty <= 0) {
+                this._removeLine(minus.dataset.lineId);
+            } else {
+                this._changeQty(minus.dataset.lineId, newQty);
+            }
             return;
         }
+
         if (remove) {
             event.preventDefault();
             this._removeLine(remove.dataset.lineId);
